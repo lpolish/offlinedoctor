@@ -265,9 +265,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 
-- **Issues**: [GitHub Issues](https://github.com/yourorg/offline-doctor/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourorg/offline-doctor/discussions)
-- **Email**: support@offlinedoctor.com
+- **Issues**: [GitHub Issues](https://github.com/lpolish/offlinedoctor/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lpolish/offlinedoctor/discussions)
+- **Email**: hello@luispulido.com
 
 ---
 

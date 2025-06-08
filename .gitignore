@@ -1,0 +1,16 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+# Electron build output
+dist/
+# Python virtual environment
+backend/venv/
+# Python bytecode
+__pycache__/
+*.pyc
+# Logs
+*.log
+# OS files
+.DS_Store
+# IDE settings
+.vscode/

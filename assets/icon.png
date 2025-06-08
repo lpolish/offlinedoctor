@@ -1,0 +1,11 @@
+# Placeholder icon file - replace with actual icon
+# This would normally be a PNG, ICO, or ICNS file
+# For now, this serves as a placeholder
+
+# To create proper icons:
+# 1. Design a medical-themed icon (stethoscope, medical cross, etc.)
+# 2. Create multiple sizes: 16x16, 32x32, 48x48, 128x128, 256x256, 512x512
+# 3. Save as:
+#    - icon.png (Linux)
+#    - icon.ico (Windows) 
+#    - icon.icns (macOS)

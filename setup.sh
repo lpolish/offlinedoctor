@@ -101,11 +101,11 @@ fi
 # Pull medical model
 echo "📥 Setting up medical AI model..."
 echo "This may take a while depending on your internet connection..."
-if ollama list | grep -q "llama3.1:8b"; then
-    echo "✅ Llama 3.1 model already available"
+if ollama list | grep -q "tinyllama"; then
+    echo "✅ tinyllama model already available"
 else
-    echo "Downloading Llama 3.1 model..."
-    ollama pull llama3.1:8b
+    echo "Downloading tinyllama model..."
+    ollama pull tinyllama
 fi
 
 # Create desktop entry (Linux only)
@@ -158,7 +158,7 @@ echo "  npm run build-win      # For Windows (cross-compile)"
 echo "  npm run build-mac      # For macOS (cross-compile)"
 echo ""
 echo "📚 First-time usage tips:"
-echo "  1. The AI model (llama2) has been downloaded"
+echo "  1. The AI model (tinyllama) has been downloaded"
 echo "  2. All conversations are stored locally"
 echo "  3. No internet connection required after setup"
 echo "  4. Always consult healthcare professionals for serious medical concerns"

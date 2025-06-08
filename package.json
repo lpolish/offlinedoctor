@@ -1,0 +1,98 @@
+{
+  "name": "offlinedoctor",
+  "version": "1.0.0",
+  "description": "AI-powered offline medical assistant using Ollama",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --publish=never",
+    "setup-python": "cd backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
+    "setup-python-win": "cd backend && python -m venv venv && venv\\Scripts\\activate && pip install -r requirements.txt",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["medical", "ai", "offline", "doctor", "health", "ollama", "electron"],
+  "author": "Offline Doctor Team",
+  "license": "MIT",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.offlinedoctor.app",
+    "productName": "Offline Doctor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "style.css",
+      "assets/**/*",
+      "backend/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "backend"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.medical"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Science"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "child_process": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "os": "^0.1.2",
+    "path": "^0.12.7"
+  }
+}

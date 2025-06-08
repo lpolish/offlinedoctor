@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Doctor - AI Medical Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-stethoscope"></i>
+                <h1>Offline Doctor</h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Checking...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-section="consultation">
+                        <i class="fas fa-comments"></i>
+                        <span>Consultation</span>
+                    </button>
+                    <button class="nav-item" data-section="history">
+                        <i class="fas fa-history"></i>
+                        <span>Medical History</span>
+                    </button>
+                    <button class="nav-item" data-section="symptoms">
+                        <i class="fas fa-list-ul"></i>
+                        <span>Symptom Checker</span>
+                    </button>
+                    <button class="nav-item" data-section="medications">
+                        <i class="fas fa-pills"></i>
+                        <span>Medications</span>
+                    </button>
+                    <button class="nav-item" data-section="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Consultation Section -->
+                <section id="consultation" class="content-section active">
+                    <div class="section-header">
+                        <h2>AI Medical Consultation</h2>
+                        <p>Describe your symptoms or ask medical questions. Our AI will provide guidance.</p>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message bot-message">
+                                <div class="message-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="message-content">
+                                    <p>Hello! I'm your AI medical assistant. Please describe your symptoms or any health concerns you may have. Remember, I'm here to provide guidance, but always consult with a healthcare professional for serious medical issues.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-container">
+                            <div class="input-group">
+                                <textarea 
+                                    id="messageInput" 
+                                    placeholder="Describe your symptoms or ask a medical question..."
+                                    rows="3"
+                                ></textarea>
+                                <button id="sendButton" class="send-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Medical History Section -->
+                <section id="history" class="content-section">
+                    <div class="section-header">
+                        <h2>Medical History</h2>
+                        <p>Keep track of your medical consultations and health records.</p>
+                    </div>
+                    
+                    <div class="history-container">
+                        <div class="history-filters">
+                            <input type="date" id="dateFilter" class="filter-input">
+                            <select id="typeFilter" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="consultation">Consultations</option>
+                                <option value="symptom">Symptom Checks</option>
+                                <option value="medication">Medications</option>
+                            </select>
+                        </div>
+                        
+                        <div class="history-list" id="historyList">
+                            <!-- History items will be populated here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Symptoms Section -->
+                <section id="symptoms" class="content-section">
+                    <div class="section-header">
+                        <h2>Symptom Checker</h2>
+                        <p>Select your symptoms for a quick assessment.</p>
+                    </div>
+                    
+                    <div class="symptoms-container">
+                        <div class="symptom-categories">
+                            <div class="category">
+                                <h3>General Symptoms</h3>
+                                <div class="symptom-grid">
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="fever">
+                                        <span>Fever</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="fatigue">
+                                        <span>Fatigue</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="headache">
+                                        <span>Headache</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="nausea">
+                                        <span>Nausea</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="category">
+                                <h3>Respiratory</h3>
+                                <div class="symptom-grid">
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="cough">
+                                        <span>Cough</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="shortness_of_breath">
+                                        <span>Shortness of Breath</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="sore_throat">
+                                        <span>Sore Throat</span>
+                                    </label>
+                                    <label class="symptom-item">
+                                        <input type="checkbox" value="chest_pain">
+                                        <span>Chest Pain</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="analyzeSymptoms" class="analyze-btn">
+                            <i class="fas fa-search"></i>
+                            Analyze Symptoms
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Medications Section -->
+                <section id="medications" class="content-section">
+                    <div class="section-header">
+                        <h2>Medication Tracker</h2>
+                        <p>Keep track of your medications and get drug interaction warnings.</p>
+                    </div>
+                    
+                    <div class="medications-container">
+                        <div class="add-medication">
+                            <input type="text" id="medicationInput" placeholder="Enter medication name...">
+                            <button id="addMedication" class="add-btn">
+                                <i class="fas fa-plus"></i>
+                                Add Medication
+                            </button>
+                        </div>
+                        
+                        <div class="medication-list" id="medicationList">
+                            <!-- Medications will be listed here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings" class="content-section">
+                    <div class="section-header">
+                        <h2>Settings</h2>
+                        <p>Configure your application preferences and AI model settings.</p>
+                    </div>
+                    
+                    <div class="settings-container">
+                        <div class="setting-group">
+                            <h3>AI Model Configuration</h3>
+                            <div class="setting-item">
+                                <label for="modelSelect">Medical AI Model:</label>
+                                <select id="modelSelect" class="setting-select">
+                                    <option value="llama2">Llama 2 (Recommended)</option>
+                                    <option value="mistral">Mistral</option>
+                                    <option value="codellama">Code Llama</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label for="temperatureSlider">Response Creativity:</label>
+                                <input type="range" id="temperatureSlider" min="0" max="1" step="0.1" value="0.3">
+                                <span id="temperatureValue">0.3</span>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3>Privacy & Data</h3>
+                            <div class="setting-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="saveHistory">
+                                    <span>Save consultation history locally</span>
+                                </label>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="anonymizeData">
+                                    <span>Anonymize personal information</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3>System Information</h3>
+                            <div class="system-info" id="systemInfo">
+                                <!-- System info will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+        </div>
+        <p>Processing your request...</p>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

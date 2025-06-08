@@ -2,7 +2,7 @@
 
 A cross-platform desktop application that provides AI-powered medical assistance without requiring an internet connection. Built with Electron and powered by Ollama for complete privacy and offline functionality.
 
-![Offline Doctor](assets/screenshot.png)
+![Offline Doctor](offlinedoctor.png)
 
 ## ✨ Features
 

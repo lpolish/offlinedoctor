@@ -12,6 +12,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,8 +22,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Ollama configuration
-OLLAMA_HOST = "http://localhost:11434"
-DEFAULT_MODEL = "llama3.1:8b"
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+DEFAULT_MODEL = "tinyllama"
 
 class MedicalAI:
     def __init__(self):

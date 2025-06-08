@@ -58,3 +58,7 @@ curl http://localhost:11434/api/generate -d '{
   "stream": false
 }'
 ```
+
+## Contributing
+
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards.

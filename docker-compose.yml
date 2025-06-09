@@ -32,5 +32,3 @@ services:
       - JEKYLL_ENV=production
     depends_on:
       - backend
-    volumes:
-      - .:/app

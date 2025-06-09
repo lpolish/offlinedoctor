@@ -5,7 +5,7 @@ title: Offline Doctor - AI Medical Assistant
 
 # Offline Doctor - AI Medical Assistant
 
-![Offline Doctor](/assets/offlinedoctor.png)
+![Offline Doctor](/offlinedoctor/assets/images/offlinedoctor.png)
 
 A cross-platform desktop application that provides AI-powered medical assistance without requiring an internet connection. Built with Electron and powered by Ollama for complete privacy and offline functionality.
 

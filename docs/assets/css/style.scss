@@ -1,5 +1,7 @@
-/* Custom styles for Offline Doctor documentation */
+---
+---
 
+/* Custom styles for Offline Doctor documentation */
 :root {
   --primary-color: #667eea;
   --secondary-color: #764ba2;
@@ -7,34 +9,110 @@
   --link-color: #4a5568;
   --background-color: #ffffff;
   --code-background: #f7fafc;
+  --header-height: 60px;
+  --mobile-menu-height: calc(100vh - var(--header-height));
 }
 
+/* Base styles */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-color);
   line-height: 1.6;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Header styles */
+.site-header {
+  background: var(--background-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  z-index: 1000;
+  
+  .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+  
+  .site-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    
+    .logo {
+      height: 40px;
+      width: auto;
+    }
+  }
+}
+
+/* Navigation styles */
+.site-nav {
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+    
+    &:hover,
+    &.active {
+      border-color: var(--primary-color);
+    }
+  }
+  
+  .menu-icon {
+    display: none;
+  }
+}
+
+/* Main content */
 .main-content {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: var(--header-height) auto 0;
   padding: 2rem;
+  flex: 1;
+  
+  h1, h2, h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+  }
+  
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
-h1, h2, h3 {
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-a {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
+/* Buttons */
 .button {
   display: inline-block;
   padding: 0.75rem 1.5rem;
@@ -44,11 +122,11 @@ a:hover {
   text-decoration: none;
   margin: 0.5rem;
   transition: transform 0.3s ease;
-}
-
-.button:hover {
-  transform: translateY(-2px);
-  text-decoration: none;
+  
+  &:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
 }
 
 pre {
@@ -92,12 +170,92 @@ pre {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Mobile styles */
 @media (max-width: 768px) {
+  .site-nav {
+    .menu-icon {
+      display: block;
+      width: 30px;
+      height: 24px;
+      position: relative;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      span {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: var(--text-color);
+        position: absolute;
+        left: 0;
+        transition: all 0.3s ease;
+        
+        &:nth-child(1) { top: 0; }
+        &:nth-child(2) { top: 50%; transform: translateY(-50%); }
+        &:nth-child(3) { bottom: 0; }
+      }
+      
+      &.active {
+        span {
+          &:nth-child(1) { transform: rotate(45deg); top: 11px; }
+          &:nth-child(2) { opacity: 0; }
+          &:nth-child(3) { transform: rotate(-45deg); bottom: 11px; }
+        }
+      }
+    }
+    
+    .nav-links {
+      display: none;
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      right: 0;
+      height: var(--mobile-menu-height);
+      background: var(--background-color);
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      
+      &.active {
+        display: flex;
+      }
+    }
+  }
+  
   .main-content {
     padding: 1rem;
   }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #e2e8f0;
+    --background-color: #1a202c;
+    --code-background: #2d3748;
+  }
   
-  .feature-grid {
-    grid-template-columns: 1fr;
+  .site-header {
+    background: var(--background-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+}
+
+/* Print styles */
+@media print {
+  .site-header {
+    position: relative;
+    box-shadow: none;
+  }
+  
+  .site-nav {
+    display: none;
+  }
+  
+  .main-content {
+    margin: 0;
   }
 }

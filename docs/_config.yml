@@ -22,12 +22,12 @@ navigation:
     url: /tutorials
   - title: Download
     url: /download
+  - title: FAQ
+    url: /faq
   - title: Blog
     url: /blog
   - title: Community
     url: /community
-  - title: FAQ
-    url: /faq
   - title: GitHub
     url: https://github.com/lpolish/offlinedoctor
 

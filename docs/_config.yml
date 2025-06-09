@@ -5,6 +5,11 @@ theme: jekyll-theme-cayman
 baseurl: "/offlinedoctor"
 url: "https://lpolish.github.io"
 
+# Jekyll settings
+sass:
+  style: compressed
+  sass_dir: assets/css
+
 # Navigation
 navigation:
   - title: Home

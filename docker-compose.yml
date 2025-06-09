@@ -19,6 +19,17 @@ services:
       - OLLAMA_HOST=http://backend:5000
     ports:
       - "3000:3000"
+      
+  docs:
+    image: jekyll/jekyll:4.2.2
+    command: jekyll build --watch
+    volumes:
+      - ./docs:/srv/jekyll
+      - ./docs/_site:/srv/jekyll/_site
+    ports:
+      - "4000:4000"
+    environment:
+      - JEKYLL_ENV=production
     depends_on:
       - backend
     volumes:

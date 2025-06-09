@@ -41,4 +41,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_site
           publish_branch: gh-pages
-          cname: docs.offlinedoctor.ai  # Optional: If you have a custom domain

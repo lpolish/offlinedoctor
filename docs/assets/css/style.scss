@@ -3,10 +3,10 @@
 
 /* Custom styles for Offline Doctor documentation */
 :root {
-  --primary-color: #4361ee;
-  --secondary-color: #3730a3;
-  --text-color: #1a202c;
-  --link-color: #1e40af;
+  --primary-color: #1a56db;
+  --secondary-color: #1e429f;
+  --text-color: #000000;
+  --link-color: #1a56db;
   --background-color: #ffffff;
   --code-background: #f8fafc;
   --header-height: 60px;
@@ -222,7 +222,7 @@ pre {
     p {
       font-size: 0.9rem;
       color: var(--text-color);
-      opacity: 0.8;
+      opacity: 0.9;
     }
   }
 }
@@ -290,7 +290,7 @@ pre {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
-    --text-color: #f1f5f9;
+    --text-color: #ffffff;
     --background-color: #1a202c;
     --code-background: #2d3748;
     --link-color: #93c5fd;

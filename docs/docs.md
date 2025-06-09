@@ -5,249 +5,258 @@ title: Documentation - Offline Doctor
 
 # Offline Doctor Documentation
 
-## Table of Contents
+Welcome to the comprehensive documentation for Offline Doctor. This guide covers everything from basic usage to advanced development topics.
 
-1. [Effective Communication](#effective-communication)
-2. [Best Practices](#best-practices)
-3. [Example Interactions](#example-interactions)
-4. [Architecture](#architecture)
-5. [Features](#features)
-6. [Configuration](#configuration)
-7. [Security & Privacy](#security--privacy)
+## 📚 Table of Contents
 
-## Effective Communication
+1. [Getting Started](#getting-started)
+2. [Core Features](#core-features)
+3. [User Guide](#user-guide)
+4. [Technical Guide](#technical-guide)
+5. [API Reference](#api-reference)
+6. [Security & Privacy](#security--privacy)
+7. [Contributing](#contributing)
 
-Offline Doctor uses a local LLM (Llama2) through Ollama, optimized for medical conversations while maintaining privacy. Here's how to communicate effectively:
+## 🚀 Getting Started
 
-### Structuring Your Questions
+### System Requirements
 
-1. **Be Specific and Concise**
-   - ✅ "What are the symptoms of strep throat?"
-   - ❌ "I'm not feeling well, there's something in my throat, and I wonder what it could be..."
+* **Hardware**
+  * CPU: 2+ cores recommended
+  * RAM: 4GB minimum, 8GB+ recommended
+  * Storage: 2GB+ free space
+  * GPU: Optional, integrated graphics sufficient
 
-2. **Include Relevant Context**
-   - ✅ "I have a fever of 101°F, sore throat, and headache. Are these flu symptoms?"
-   - ❌ "Am I getting sick?"
+* **Software**
+  * Modern operating system (Windows 10+, macOS 10.15+, Linux)
+  * Node.js 16 or higher
+  * Python 3.7 or higher
+  * Git for installation
 
-3. **One Issue at a Time**
-   - ✅ "What are common treatments for tension headaches?"
-   - ❌ "What about headaches and stomach pain and also my knee hurts?"
+### Quick Installation
 
-### Key Information to Include
+1. Clone the repository
+2. Run setup script
+3. Launch application
+4. Complete initial configuration
 
-- **Symptoms**: Be specific about what you're experiencing
-- **Duration**: How long have you had the symptoms
-- **Severity**: Rate pain/discomfort on a scale of 1-10
-- **Context**: Relevant medical history or triggers
+[Full installation guide](./getting-started.html)
 
-## Best Practices
+## 💻 Core Features
 
-### DO:
-- Start with the most prominent symptom
-- Use medical terms if you know them
-- Provide numerical values (temperature, blood pressure, etc.)
-- Mention any relevant allergies or conditions
-- Follow up with clarifying questions
+### Medical Consultation
 
-### DON'T:
-- Include personal identifiers
-- Write long, narrative descriptions
-- Mix multiple unrelated conditions
-- Expect diagnostic certainty
-- Use for emergency situations
+Offline Doctor provides AI-powered medical guidance through:
 
-### Privacy Tips
-- Use general terms instead of specific personal details
-- Focus on symptoms rather than personal history
-- Clear chat history after each session
+* Natural language interaction
+* Symptom analysis
+* Health information
+* Medical references
+* Follow-up suggestions
 
-## Example Interactions
+### Privacy Focus
 
-### Effective Examples
+* Complete offline operation
+* Local data storage
+* Optional encryption
+* Data anonymization
+* Secure cleanup
 
-1. **Headache Inquiry**
+### User Interface
 
-   ```text
-   Input: "I have a throbbing headache in the front of my head, pain level 7/10, started 6 hours ago. No fever or nausea. What could help?"
-   ```
+* Intuitive chat interface
+* Symptom checker
+* Medical history tracking
+* Settings customization
+* Data management
 
-2. **Medication Question**
+## 📖 User Guide
 
-   ```text
-   Input: "What's the recommended dosage for over-the-counter ibuprofen for an adult with mild joint pain?"
-   ```
+### Effective Communication
 
-3. **Symptom Check**
+For best results:
 
-   ```text
-   Input: "Dry cough for 3 days, no fever, slight fatigue. What are common causes and when should I seek medical attention?"
-   ```
+1. **Be Specific**
+   * Describe symptoms clearly
+   * Include relevant details
+   * Mention duration and severity
+   * List any medications
 
-### Follow-up Questions
+2. **Ask Clear Questions**
+   * One topic at a time
+   * Include context
+   * Follow up for clarity
+   * Ask for explanations
 
-When the AI responds, ask focused follow-up questions:
+3. **Understand Limitations**
+   * General information only
+   * Not for diagnosis
+   * Seek professional care
+   * Emergency awareness
 
-```text
-"What warning signs should I watch for?"
-"How long should I wait before seeking medical attention?"
-"Are there any home remedies I could try first?"
+### Best Practices
+
+1. **Regular Use**
+   * Keep history updated
+   * Track symptoms
+   * Note changes
+   * Follow guidance
+
+2. **Data Management**
+   * Regular backups
+   * Clean old data
+   * Export important info
+   * Maintain privacy
+
+3. **Safety First**
+   * Know emergency signs
+   * Have backup contacts
+   * Keep doctor informed
+   * Document interactions
+
+## 🔧 Technical Guide
+
+### Architecture Overview
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend        │    │   AI Engine     │
+│   (Electron)    │◄──►│   (Python Flask) │◄──►│   (Ollama)      │
+│                 │    │                  │    │                 │
+│ • HTML/CSS/JS   │    │ • REST API       │    │ • Llama2 Model  │
+│ • Chat UI       │    │ • Medical Logic  │    │ • Local Inference│
+│ • Settings      │    │ • Data Storage   │    │ • No Internet   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-### Emergency Guidance
+### Component Details
 
-⚠️ **Important**: For any of these symptoms, seek immediate medical attention instead of using Offline Doctor:
+1. **Frontend (Electron)**
+   * Cross-platform desktop application
+   * Modern web technologies
+   * Responsive design
+   * Native integration
 
-- Severe chest pain
-- Difficulty breathing
-- Severe bleeding
-- Loss of consciousness
-- Sudden severe headache
-- Stroke symptoms (FAST: Face drooping, Arm weakness, Speech difficulty, Time to call emergency)
+2. **Backend (Flask)**
+   * RESTful API
+   * Business logic
+   * Data management
+   * Security controls
 
-## Architecture
-- **Backend**: Python Flask server for AI processing
-- **AI Engine**: Ollama for local model inference
+3. **AI Engine (Ollama)**
+   * Local model hosting
+   * Efficient inference
+   * Medical context
+   * Privacy protection
 
-### Component Interaction
+## 🔌 API Reference
 
-```
-Frontend (Electron) ←→ Backend (Flask) ←→ Ollama (AI)
-```
+### Backend API
 
-## Features
+#### Consultation Endpoint
 
-### AI Medical Consultation
+```http
+POST /api/consultation
+Content-Type: application/json
 
-- Natural language medical queries
-- Symptom analysis and guidance
-- Medical information and explanations
-- Healthcare recommendations
-
-### Symptom Checker
-
-- Comprehensive symptom selection
-- AI-powered analysis
-- Risk assessment
-- Professional care recommendations
-
-### Medication Management
-
-- Medication tracking
-- Drug interaction checks
-- Reminder system
-- Medical history logging
-
-### Privacy Features
-
-- Local-only data storage
-- No internet requirement
-- Data encryption options
-- History anonymization
-
-## Configuration
-
-### AI Model Settings
-
-```javascript
-{
-  "model": "llama2",
-  "temperature": 0.3,
-  "max_tokens": 500,
-  "top_p": 0.9
-}
-```
-
-### Privacy Settings
-
-- **Save History**: Toggle history storage
-- **Anonymize Data**: Remove identifiers
-- **Auto-clear**: Schedule data clearing
-- **Export Data**: Local backup options
-
-## Development
-
-### Setup Development Environment
-
-```bash
-# Clone repository
-git clone https://github.com/lpolish/offlinedoctor.git
-cd offlinedoctor
-
-# Install dependencies
-npm install
-
-# Set up Python backend
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Building
-
-```bash
-# Development build
-npm run dev
-
-# Production build
-npm run build
-
-# Platform-specific builds
-npm run build-win    # Windows
-npm run build-mac    # macOS
-npm run build-linux  # Linux
-```
-
-## Security & Privacy
-
-### Data Storage
-
-- All data stored locally
-- Optional encryption
-- No cloud connectivity
-- Regular data cleanup
-
-### Communication
-
-- Local-only API calls
-- Secure IPC channels
-- Sanitized inputs
-- Error handling
-
-## API Reference
-
-### Backend API Endpoints
-
-#### Medical Consultation
-```
-POST /consultation
 {
   "message": "string",
-  "history": "array (optional)"
+  "context": "object",
+  "history": "array"
 }
 ```
 
 #### Symptom Analysis
-```
-POST /analyze-symptoms
-{
-  "symptoms": "array"
-}
-```
 
-#### Medication Check
-```
-POST /medication-interaction
+```http
+POST /api/analyze-symptoms
+Content-Type: application/json
+
 {
-  "medications": "array"
+  "symptoms": "array",
+  "duration": "string",
+  "severity": "number"
 }
 ```
 
 ### Frontend API
 
-#### Electron IPC Channels
-- `medical-query`
-- `get-models`
-- `system-check`
+#### IPC Channels
 
-[Back to Home](./){: .button} [Getting Started](./getting-started.html){: .button}
+* `consultation:send`
+* `consultation:receive`
+* `symptoms:analyze`
+* `settings:update`
+
+#### Event Handlers
+
+```javascript
+// Example event listener
+ipcMain.on('consultation:send', async (event, data) => {
+  // Handle consultation request
+});
+```
+
+## 🔒 Security & Privacy
+
+### Data Protection
+
+1. **Storage Security**
+   * Local-only storage
+   * Optional encryption
+   * Secure deletion
+   * Access control
+
+2. **Runtime Security**
+   * Memory cleanup
+   * Process isolation
+   * Input validation
+   * Error handling
+
+3. **Network Security**
+   * Offline operation
+   * Local API only
+   * No external calls
+   * Port security
+
+### Privacy Features
+
+* Data anonymization
+* History control
+* Export options
+* Backup encryption
+
+## 🤝 Contributing
+
+### Development Setup
+
+1. Fork repository
+2. Install dependencies
+3. Configure environment
+4. Run tests
+
+### Code Standards
+
+* Modern JavaScript
+* Type safety
+* Test coverage
+* Documentation
+
+### Review Process
+
+1. Create PR
+2. Pass tests
+3. Code review
+4. Documentation
+5. Merge
+
+[View Contributing Guide](./contributing.html)
+
+## 📚 Additional Resources
+
+* [User Tutorials](./tutorials.html)
+* [API Documentation](./api.html)
+* [Security Guide](./security.html)
+* [Development Guide](./development.html)
+
+[Back to Top](#offline-doctor-documentation) | [Getting Started](./getting-started.html){: .button} | [API Reference](./api.html){: .button}

@@ -5,12 +5,19 @@
 :root {
   --primary-color: #1a56db;
   --secondary-color: #1e429f;
-  --text-color: #000000;
+  --text-color: #1a1a1a;
   --link-color: #1a56db;
   --background-color: #ffffff;
   --code-background: #f8fafc;
   --header-height: 60px;
   --mobile-menu-height: calc(100vh - var(--header-height));
+  
+  /* Dark mode colors */
+  --dark-text: #e1e1e1;
+  --dark-background: #1a1a1a;
+  --dark-code-background: #2d2d2d;
+  --dark-link: #93c5fd;
+  --dark-primary: #60a5fa;
 }
 
 /* Base styles */
@@ -290,16 +297,26 @@ pre {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
-    --text-color: #ffffff;
-    --background-color: #1a202c;
-    --code-background: #2d3748;
-    --link-color: #93c5fd;
-    --primary-color: #60a5fa;
+    --text-color: var(--dark-text);
+    --background-color: var(--dark-background);
+    --code-background: var(--dark-code-background);
+    --link-color: var(--dark-link);
+    --primary-color: var(--dark-primary);
+  }
+  
+  body {
+    background-color: var(--dark-background);
+    color: var(--dark-text);
   }
   
   .site-header {
-    background: var(--background-color);
+    background: var(--dark-background);
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  
+  .main-content {
+    background-color: var(--dark-background);
+    color: var(--dark-text);
   }
   
   .site-footer {
@@ -307,6 +324,53 @@ pre {
     
     .footer-bottom {
       border-top-color: rgba(255,255,255,0.1);
+    }
+  }
+  
+  /* Dark mode overrides for markdown content */
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--dark-text);
+  }
+
+  a {
+    color: var(--dark-link);
+    &:hover {
+      color: var(--dark-primary);
+    }
+  }
+
+  code {
+    background: var(--dark-code-background);
+    color: var(--dark-text);
+  }
+
+  pre {
+    background: var(--dark-code-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .button {
+    background: var(--dark-primary);
+    color: var(--dark-text);
+    &:hover {
+      background: var(--dark-link);
+    }
+  }
+
+  blockquote {
+    border-left-color: var(--dark-primary);
+    color: var(--dark-text);
+  }
+
+  table {
+    th, td {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    th {
+      background: var(--dark-code-background);
+    }
+    tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.05);
     }
   }
 }

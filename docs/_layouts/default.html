@@ -40,6 +40,36 @@
         {{ content }}
     </main>
 
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>About Offline Doctor</h3>
+                <p>An AI-powered medical assistant that works completely offline, respecting your privacy and data security.</p>
+            </div>
+            <div class="footer-section">
+                <h3>For Developers</h3>
+                <ul>
+                    <li><a href="https://github.com/lpolish/offlinedoctor">GitHub Repository</a></li>
+                    <li><a href="{{ '/contributing' | relative_url }}">Contributing Guide</a></li>
+                    <li><a href="{{ '/docs' | relative_url }}">Documentation</a></li>
+                    <li><a href="https://github.com/lpolish/offlinedoctor/issues">Report Issues</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ '/getting-started' | relative_url }}">Getting Started</a></li>
+                    <li><a href="{{ '/download' | relative_url }}">Download</a></li>
+                    <li><a href="{{ '/community' | relative_url }}">Community</a></li>
+                    <li><a href="{{ '/faq' | relative_url }}">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {{ 'now' | date: "%Y" }} Offline Doctor. Licensed under MIT. Built with ❤️ for healthcare privacy.</p>
+        </div>
+    </footer>
+
     <script>
         // Mobile menu toggle functionality
         const menuButton = document.querySelector('.menu-icon');

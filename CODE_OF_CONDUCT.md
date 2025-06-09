@@ -17,7 +17,7 @@ Community leaders are responsible for clarifying and enforcing standards of acce
 
 ## Reporting Guidelines
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project maintainers at [maintainers@offlinedoctor.org]. All complaints will be reviewed and investigated.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project maintainers at [hello@luispulido.com]. All complaints will be reviewed and investigated.
 
 ## License and Attribution
 

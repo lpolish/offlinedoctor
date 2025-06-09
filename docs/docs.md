@@ -7,18 +7,104 @@ title: Documentation - Offline Doctor
 
 ## Table of Contents
 
-1. [Architecture](#architecture)
-2. [Features](#features)
-3. [Configuration](#configuration)
-4. [Development](#development)
-5. [Security & Privacy](#security--privacy)
-6. [API Reference](#api-reference)
+1. [Effective Communication](#effective-communication)
+2. [Best Practices](#best-practices)
+3. [Example Interactions](#example-interactions)
+4. [Architecture](#architecture)
+5. [Features](#features)
+6. [Configuration](#configuration)
+7. [Security & Privacy](#security--privacy)
+
+## Effective Communication
+
+Offline Doctor uses a local LLM (Llama2) through Ollama, optimized for medical conversations while maintaining privacy. Here's how to communicate effectively:
+
+### Structuring Your Questions
+
+1. **Be Specific and Concise**
+   - ✅ "What are the symptoms of strep throat?"
+   - ❌ "I'm not feeling well, there's something in my throat, and I wonder what it could be..."
+
+2. **Include Relevant Context**
+   - ✅ "I have a fever of 101°F, sore throat, and headache. Are these flu symptoms?"
+   - ❌ "Am I getting sick?"
+
+3. **One Issue at a Time**
+   - ✅ "What are common treatments for tension headaches?"
+   - ❌ "What about headaches and stomach pain and also my knee hurts?"
+
+### Key Information to Include
+
+- **Symptoms**: Be specific about what you're experiencing
+- **Duration**: How long have you had the symptoms
+- **Severity**: Rate pain/discomfort on a scale of 1-10
+- **Context**: Relevant medical history or triggers
+
+## Best Practices
+
+### DO:
+- Start with the most prominent symptom
+- Use medical terms if you know them
+- Provide numerical values (temperature, blood pressure, etc.)
+- Mention any relevant allergies or conditions
+- Follow up with clarifying questions
+
+### DON'T:
+- Include personal identifiers
+- Write long, narrative descriptions
+- Mix multiple unrelated conditions
+- Expect diagnostic certainty
+- Use for emergency situations
+
+### Privacy Tips
+- Use general terms instead of specific personal details
+- Focus on symptoms rather than personal history
+- Clear chat history after each session
+
+## Example Interactions
+
+### Effective Examples
+
+1. **Headache Inquiry**
+
+   ```text
+   Input: "I have a throbbing headache in the front of my head, pain level 7/10, started 6 hours ago. No fever or nausea. What could help?"
+   ```
+
+2. **Medication Question**
+
+   ```text
+   Input: "What's the recommended dosage for over-the-counter ibuprofen for an adult with mild joint pain?"
+   ```
+
+3. **Symptom Check**
+
+   ```text
+   Input: "Dry cough for 3 days, no fever, slight fatigue. What are common causes and when should I seek medical attention?"
+   ```
+
+### Follow-up Questions
+
+When the AI responds, ask focused follow-up questions:
+
+```text
+"What warning signs should I watch for?"
+"How long should I wait before seeking medical attention?"
+"Are there any home remedies I could try first?"
+```
+
+### Emergency Guidance
+
+⚠️ **Important**: For any of these symptoms, seek immediate medical attention instead of using Offline Doctor:
+
+- Severe chest pain
+- Difficulty breathing
+- Severe bleeding
+- Loss of consciousness
+- Sudden severe headache
+- Stroke symptoms (FAST: Face drooping, Arm weakness, Speech difficulty, Time to call emergency)
 
 ## Architecture
-
-Offline Doctor uses a three-tier architecture:
-
-- **Frontend**: Electron-based desktop application
 - **Backend**: Python Flask server for AI processing
 - **AI Engine**: Ollama for local model inference
 

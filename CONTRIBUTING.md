@@ -5,16 +5,21 @@ Thank you for your interest in contributing to **Offline Doctor**! We welcome co
 ## Getting Started
 
 1. Fork the repository and clone your fork:
+
    ```bash
-   git clone https://github.com/yourusername/offlinedoctor.git
+   git clone https://github.com/lpolish/offlinedoctor.git
    cd offlinedoctor
    ```
+
 2. Install dependencies:
    - Frontend:
+
      ```bash
      npm install
      ```
+
    - Backend:
+
      ```bash
      cd backend
      python3 -m venv venv
@@ -23,7 +28,9 @@ Thank you for your interest in contributing to **Offline Doctor**! We welcome co
      deactivate
      cd ..
      ```
+
 3. Run the app locally:
+
    ```bash
    npm start
    ```
@@ -39,9 +46,11 @@ Thank you for your interest in contributing to **Offline Doctor**! We welcome co
 ### Pull Requests
 
 1. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
+
 2. Commit changes with a clear, descriptive message.
 3. Push your branch and open a pull request against `main`.
 4. Ensure CI passes and all tests (if any) are passing.

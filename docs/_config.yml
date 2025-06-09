@@ -1,0 +1,39 @@
+title: Offline Doctor
+description: AI-powered offline medical assistant
+theme: jekyll-theme-cayman
+
+baseurl: "/offlinedoctor"
+url: "https://lpolish.github.io"
+
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: Getting Started
+    url: /getting-started
+  - title: Documentation
+    url: /docs
+  - title: Tutorials
+    url: /tutorials
+  - title: Download
+    url: /download
+  - title: Blog
+    url: /blog
+  - title: Community
+    url: /community
+  - title: FAQ
+    url: /faq
+  - title: GitHub
+    url: https://github.com/lpolish/offlinedoctor
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

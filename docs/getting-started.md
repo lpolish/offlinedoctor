@@ -5,26 +5,43 @@ title: Getting Started - Offline Doctor
 
 # Getting Started with Offline Doctor
 
-## Prerequisites
+Welcome to Offline Doctor! This guide will help you set up and start using our AI-powered medical assistant. Offline Doctor provides private, secure medical guidance without requiring an internet connection.
 
-Before installing Offline Doctor, ensure you have:
+## 🔍 System Requirements
 
-- **Node.js** 16 or higher ([Download](https://nodejs.org/))
-- **Python** 3.7 or higher ([Download](https://python.org/))
-- **Git** (for cloning the repository)
+### Hardware Requirements
 
-## Installation
+* **CPU**: 2 cores minimum, 4+ cores recommended
+* **RAM**: 4GB minimum, 8GB+ recommended
+* **Storage**: 2GB free space minimum
+* **Graphics**: Basic GPU (integrated graphics sufficient)
+
+### Software Prerequisites
+
+* **Operating System**
+  * Windows 10/11 (64-bit)
+  * macOS 10.15 or later
+  * Linux (Ubuntu 20.04+, Fedora 34+, or similar)
+
+* **Required Software**
+  * Node.js 16 or higher ([Download](https://nodejs.org/))
+  * Python 3.7 or higher ([Download](https://python.org/))
+  * Git ([Download](https://git-scm.com/))
+
+## 🚀 Installation
 
 ### Quick Setup (Recommended)
 
-1. **Clone the repository:**
+1. **Clone the Repository**
    ```bash
    git clone https://github.com/lpolish/offlinedoctor.git
    cd offlinedoctor
    ```
 
-2. **Run the setup script:**
+2. **Run Automated Setup**
    
+   Choose your platform:
+
    **Linux/macOS:**
    ```bash
    ./setup.sh
@@ -35,94 +52,172 @@ Before installing Offline Doctor, ensure you have:
    setup.bat
    ```
 
-3. **Start the application:**
+   This script will:
+   * Install all dependencies
+   * Set up the Python environment
+   * Configure Ollama
+   * Install required AI models
+   * Create desktop shortcuts
+
+3. **Start Offline Doctor**
    ```bash
    npm start
    ```
 
-### Manual Setup
+### Manual Installation
 
-1. **Clone and install dependencies:**
+If you prefer more control over the installation process:
+
+1. **Install Dependencies**
    ```bash
    git clone https://github.com/lpolish/offlinedoctor.git
    cd offlinedoctor
    npm install
    ```
 
-2. **Set up Python backend:**
+2. **Configure Python Backend**
    ```bash
    cd backend
    python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Activate virtual environment
+   # On Linux/macOS:
+   source venv/bin/activate
+   # On Windows:
+   # venv\Scripts\activate
+   
    pip install -r requirements.txt
    deactivate
    cd ..
    ```
 
-3. **Install Ollama:**
+3. **Install Ollama**
    
-   Linux/macOS:
+   **Linux/macOS:**
    ```bash
    curl -fsSL https://ollama.ai/install.sh | sh
    ```
    
-   Windows: Download from [Ollama's website](https://ollama.ai/download)
+   **Windows:**
+   * Download from [Ollama's website](https://ollama.ai/download)
+   * Run the installer
+   * Follow the setup wizard
 
-4. **Pull the medical AI model:**
+4. **Download AI Models**
    ```bash
    ollama pull llama2
    ```
 
-## First Steps
+## 🎯 Initial Configuration
 
-1. **Launch the Application**
-   - Start Offline Doctor using `npm start` or the desktop shortcut
-   - Wait for the AI model to initialize
+### First Launch
 
-2. **Configure Settings**
-   - Open the Settings tab
-   - Choose your preferred AI model
-   - Adjust privacy settings
+1. **Start the Application**
+   * Run `npm start` or use desktop shortcut
+   * Wait for initialization (1-2 minutes)
+   * Confirm all services are running
 
-3. **Start a Consultation**
-   - Click the Consultation tab
-   - Type your medical question or describe symptoms
-   - Wait for the AI's response
+2. **Essential Settings**
+   * Open Settings tab
+   * Select preferred AI model
+   * Configure privacy options
+   * Set up data storage preferences
 
-4. **Use the Symptom Checker**
-   - Navigate to the Symptom Checker tab
-   - Select relevant symptoms
-   - Click "Analyze Symptoms" for AI assessment
+### Privacy Settings
 
-## Troubleshooting
+1. **Data Storage**
+   * Choose storage location
+   * Set retention period
+   * Configure backup options
+
+2. **Anonymization**
+   * Enable/disable history
+   * Set data anonymization level
+   * Configure export options
+
+## 💡 Basic Usage
+
+### Medical Consultation
+
+1. **Start a Consultation**
+   * Click "Consultation" tab
+   * Type your medical question
+   * Provide relevant details
+   * Review AI response
+
+2. **Best Practices**
+   * Be specific about symptoms
+   * Include duration and severity
+   * Mention relevant history
+   * Ask follow-up questions
+
+### Symptom Checker
+
+1. **Check Symptoms**
+   * Open Symptom Checker
+   * Select all relevant symptoms
+   * Add duration and severity
+   * Get AI assessment
+
+2. **Track History**
+   * Save important consultations
+   * Monitor symptom progression
+   * Export records if needed
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-**Ollama not starting:**
-```bash
-# Check if Ollama is running
-ps aux | grep ollama
+1. **Application Won't Start**
+   * Check Node.js installation
+   * Verify Python environment
+   * Confirm Ollama is running
+   * Check system requirements
 
-# Manually start Ollama
-ollama serve
-```
+2. **AI Model Issues**
+   ```bash
+   # Verify Ollama service
+   ps aux | grep ollama
+   
+   # Restart Ollama
+   ollama serve
+   
+   # Reinstall model if needed
+   ollama pull llama2
+   ```
 
-**Python virtual environment issues:**
-```bash
-# Recreate virtual environment
-rm -rf backend/venv
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+3. **Backend Problems**
+   ```bash
+   # Reset Python environment
+   cd backend
+   rm -rf venv
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-For more detailed troubleshooting, check our [Documentation](./docs.html).
+### Getting Help
 
-## Next Steps
+* Check [Documentation](./docs.html)
+* Visit [FAQ](./faq.html)
+* Join [Discord](https://discord.gg/offlinedoctor)
+* Report [Issues](https://github.com/lpolish/offlinedoctor/issues)
 
-- Read through our [Documentation](./docs.html) for detailed features
-- Join our [Community](https://github.com/lpolish/offlinedoctor/discussions)
-- Report issues on [GitHub](https://github.com/lpolish/offlinedoctor/issues)
+## 📚 Next Steps
 
-[Back to Home](./){: .button} [View Documentation](./docs.html){: .button}
+1. **Explore Features**
+   * Read our [Documentation](./docs.html)
+   * Try the [Tutorials](./tutorials.html)
+   * Check [Example Uses](./docs.html#example-interactions)
+
+2. **Join Community**
+   * Join [Discussions](https://github.com/lpolish/offlinedoctor/discussions)
+   * Follow Development
+   * Share Feedback
+
+3. **Advanced Usage**
+   * Custom AI Models
+   * API Integration
+   * Development Guide
+
+[Back to Home](./){: .button} [Read Docs](./docs.html){: .button} [Join Community](./community.html){: .button}

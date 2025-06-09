@@ -86,4 +86,45 @@ Get the source code from our GitHub repository:
 git clone https://github.com/lpolish/offlinedoctor.git
 ```
 
+## Building from Source
+
+You can build Offline Doctor from source for your platform:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lpolish/offlinedoctor.git
+   cd offlinedoctor
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Build for your platform:
+   ```bash
+   # Build for current platform
+   npm run build
+
+   # Or build for specific platform
+   npm run build-win    # Windows (.exe, .msi)
+   npm run build-mac    # macOS (.dmg, .pkg)
+   npm run build-linux  # Linux (.AppImage, .deb, .tar.gz)
+   ```
+
+The installers will be available in the `dist` directory.
+
+## Continuous Integration
+
+All releases are automatically built using GitHub Actions:
+- Windows: `.exe` and `.msi` installers
+- macOS: Universal `.dmg` and `.pkg` installers (Intel & Apple Silicon)
+- Linux: `.AppImage`, `.deb`, and `.tar.gz` packages
+
+Every release is:
+- Built on official runners for each platform
+- Automatically tested
+- Code-signed (for Windows and macOS)
+- Available as a draft release for final verification
+
 [View on GitHub](https://github.com/lpolish/offlinedoctor){: .button} [Getting Started](./getting-started.html){: .button}

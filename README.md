@@ -100,6 +100,33 @@ Create installer packages for different platforms:
 npm run build
 
 # Platform-specific builds
+npm run build-win    # Windows (.exe, .msi)
+npm run build-mac    # macOS (.dmg, .pkg)
+npm run build-linux  # Linux (.AppImage, .deb, .tar.gz)
+```
+
+### Automatic Builds with GitHub Actions
+
+The project uses GitHub Actions to automatically build installers for all platforms:
+
+1. **On every push** to `main` branch: Builds and tests the application
+2. **On pull requests**: Builds and tests the changes
+3. **On version tags** (`v*`): Creates a draft release with installers for all platforms
+
+To create a new release:
+
+1. Update version in `package.json`
+2. Create and push a new tag:
+   ```bash
+   git tag v1.0.0  # Use appropriate version
+   git push origin v1.0.0
+   ```
+3. GitHub Actions will automatically:
+   - Build installers for Windows, macOS, and Linux
+   - Create a draft release with all installers
+   - Generate release notes
+
+# Platform-specific builds
 npm run build-win     # Windows NSIS installer
 npm run build-mac     # macOS DMG
 npm run build-linux   # Linux AppImage and DEB

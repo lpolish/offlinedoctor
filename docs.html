@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Documentation - Offline Doctor | Offline Doctor</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Documentation - Offline Doctor" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="AI-powered offline medical assistant" />
+<meta property="og:description" content="AI-powered offline medical assistant" />
+<link rel="canonical" href="https://lpolish.github.io/offlinedoctor/docs.html" />
+<meta property="og:url" content="https://lpolish.github.io/offlinedoctor/docs.html" />
+<meta property="og:site_name" content="Offline Doctor" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Documentation - Offline Doctor" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"AI-powered offline medical assistant","headline":"Documentation - Offline Doctor","url":"https://lpolish.github.io/offlinedoctor/docs.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preload" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap" as="style" type="text/css" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/offlinedoctor/assets/css/style.css?v=">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/offlinedoctor/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <a id="skip-to-content" href="#content">Skip to the content.</a>
+
+    <header class="page-header" role="banner">
+      <h1 class="project-name">Documentation - Offline Doctor</h1>
+      <h2 class="project-tagline">AI-powered offline medical assistant</h2>
+      
+      
+    </header>
+
+    <main id="content" class="main-content" role="main">
+      <h1 id="offline-doctor-documentation">Offline Doctor Documentation</h1>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<ol>
+  <li><a href="#architecture">Architecture</a></li>
+  <li><a href="#features">Features</a></li>
+  <li><a href="#configuration">Configuration</a></li>
+  <li><a href="#development">Development</a></li>
+  <li><a href="#security--privacy">Security &amp; Privacy</a></li>
+  <li><a href="#api-reference">API Reference</a></li>
+</ol>
+
+<h2 id="architecture">Architecture</h2>
+
+<p>Offline Doctor uses a three-tier architecture:</p>
+
+<ul>
+  <li><strong>Frontend</strong>: Electron-based desktop application</li>
+  <li><strong>Backend</strong>: Python Flask server for AI processing</li>
+  <li><strong>AI Engine</strong>: Ollama for local model inference</li>
+</ul>
+
+<h3 id="component-interaction">Component Interaction</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Frontend (Electron) ←→ Backend (Flask) ←→ Ollama (AI)
+</code></pre></div></div>
+
+<h2 id="features">Features</h2>
+
+<h3 id="ai-medical-consultation">AI Medical Consultation</h3>
+
+<ul>
+  <li>Natural language medical queries</li>
+  <li>Symptom analysis and guidance</li>
+  <li>Medical information and explanations</li>
+  <li>Healthcare recommendations</li>
+</ul>
+
+<h3 id="symptom-checker">Symptom Checker</h3>
+
+<ul>
+  <li>Comprehensive symptom selection</li>
+  <li>AI-powered analysis</li>
+  <li>Risk assessment</li>
+  <li>Professional care recommendations</li>
+</ul>
+
+<h3 id="medication-management">Medication Management</h3>
+
+<ul>
+  <li>Medication tracking</li>
+  <li>Drug interaction checks</li>
+  <li>Reminder system</li>
+  <li>Medical history logging</li>
+</ul>
+
+<h3 id="privacy-features">Privacy Features</h3>
+
+<ul>
+  <li>Local-only data storage</li>
+  <li>No internet requirement</li>
+  <li>Data encryption options</li>
+  <li>History anonymization</li>
+</ul>
+
+<h2 id="configuration">Configuration</h2>
+
+<h3 id="ai-model-settings">AI Model Settings</h3>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="dl">"</span><span class="s2">model</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">llama2</span><span class="dl">"</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">temperature</span><span class="dl">"</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">max_tokens</span><span class="dl">"</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
+  <span class="dl">"</span><span class="s2">top_p</span><span class="dl">"</span><span class="p">:</span> <span class="mf">0.9</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="privacy-settings">Privacy Settings</h3>
+
+<ul>
+  <li><strong>Save History</strong>: Toggle history storage</li>
+  <li><strong>Anonymize Data</strong>: Remove identifiers</li>
+  <li><strong>Auto-clear</strong>: Schedule data clearing</li>
+  <li><strong>Export Data</strong>: Local backup options</li>
+</ul>
+
+<h2 id="development">Development</h2>
+
+<h3 id="setup-development-environment">Setup Development Environment</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Clone repository</span>
+git clone https://github.com/lpolish/offlinedoctor.git
+<span class="nb">cd </span>offlinedoctor
+
+<span class="c"># Install dependencies</span>
+npm <span class="nb">install</span>
+
+<span class="c"># Set up Python backend</span>
+<span class="nb">cd </span>backend
+python3 <span class="nt">-m</span> venv venv
+<span class="nb">source </span>venv/bin/activate
+pip <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+</code></pre></div></div>
+
+<h3 id="building">Building</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Development build</span>
+npm run dev
+
+<span class="c"># Production build</span>
+npm run build
+
+<span class="c"># Platform-specific builds</span>
+npm run build-win    <span class="c"># Windows</span>
+npm run build-mac    <span class="c"># macOS</span>
+npm run build-linux  <span class="c"># Linux</span>
+</code></pre></div></div>
+
+<h2 id="security--privacy">Security &amp; Privacy</h2>
+
+<h3 id="data-storage">Data Storage</h3>
+
+<ul>
+  <li>All data stored locally</li>
+  <li>Optional encryption</li>
+  <li>No cloud connectivity</li>
+  <li>Regular data cleanup</li>
+</ul>
+
+<h3 id="communication">Communication</h3>
+
+<ul>
+  <li>Local-only API calls</li>
+  <li>Secure IPC channels</li>
+  <li>Sanitized inputs</li>
+  <li>Error handling</li>
+</ul>
+
+<h2 id="api-reference">API Reference</h2>
+
+<h3 id="backend-api-endpoints">Backend API Endpoints</h3>
+
+<h4 id="medical-consultation">Medical Consultation</h4>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST /consultation
+{
+  "message": "string",
+  "history": "array (optional)"
+}
+</code></pre></div></div>
+
+<h4 id="symptom-analysis">Symptom Analysis</h4>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST /analyze-symptoms
+{
+  "symptoms": "array"
+}
+</code></pre></div></div>
+
+<h4 id="medication-check">Medication Check</h4>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST /medication-interaction
+{
+  "medications": "array"
+}
+</code></pre></div></div>
+
+<h3 id="frontend-api">Frontend API</h3>
+
+<h4 id="electron-ipc-channels">Electron IPC Channels</h4>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">medical-query</code></li>
+  <li><code class="language-plaintext highlighter-rouge">get-models</code></li>
+  <li><code class="language-plaintext highlighter-rouge">system-check</code></li>
+</ul>
+
+<p><a href="./" class="button">Back to Home</a> <a href="./getting-started.html" class="button">Getting Started</a></p>
+
+
+      <footer class="site-footer">
+        
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+      </footer>
+    </main>
+  </body>
+</html>

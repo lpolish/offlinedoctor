@@ -33,8 +33,8 @@ Before installing, ensure you have:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourorg/offline-doctor.git
-   cd offline-doctor
+   git clone https://github.com/lpolish/offlinedoctor.git
+   cd offlinedoctor
    ```
 
 2. **Run the setup script:**
@@ -58,8 +58,8 @@ Before installing, ensure you have:
 
 1. **Clone and install dependencies:**
    ```bash
-   git clone https://github.com/yourorg/offline-doctor.git
-   cd offline-doctor
+   git clone https://github.com/lpolish/offlinedoctor.git
+   cd offlinedoctor
    npm install
    ```
 

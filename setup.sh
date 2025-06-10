@@ -164,7 +164,19 @@ fi
 # Create desktop entry (Linux only)
 if [ "$(uname)" = "Linux" ]; then
     echo "🖥️  Creating desktop entry..."
-    cat > ~/.local/share/applications/offline-doctor.desktop << EOF
+    
+    # Determine the appropriate applications directory
+    if [ "$(id -u)" = "0" ]; then
+        # For root user, use system-wide applications directory
+        APPS_DIR="/usr/share/applications"
+    else
+        # For regular user, use local applications directory
+        APPS_DIR="${HOME}/.local/share/applications"
+        # Create the directory if it doesn't exist
+        mkdir -p "${APPS_DIR}"
+    fi
+    
+    cat > "${APPS_DIR}/offline-doctor.desktop" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -176,8 +188,8 @@ Terminal=false
 StartupWMClass=Offline Doctor
 Categories=Science;Education;MedicalSoftware;
 EOF
-    chmod +x ~/.local/share/applications/offline-doctor.desktop
-    echo "✅ Desktop entry created"
+    chmod +x "${APPS_DIR}/offline-doctor.desktop"
+    echo "✅ Desktop entry created in ${APPS_DIR}"
 fi
 
 # Create run script

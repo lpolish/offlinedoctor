@@ -21,15 +21,15 @@ A cross-platform desktop application that provides AI-powered medical assistance
 
 ## 🛠️ Prerequisites
 
-Before installing, ensure you have:
+**None! Our fully automated setup handles everything for you.**
 
-- **Node.js** 16 or higher ([Download](https://nodejs.org/))
-- **Python** 3.7 or higher ([Download](https://python.org/))
-- **Git** (for cloning the repository)
+The setup script will automatically install and configure:
+- **Node.js** (if not present)
+- **Python** (if not present) 
+- **Ollama** (if not present)
+- All required dependencies and AI models
 
-## 🚀 Quick Start
-
-### Automated Setup (Recommended)
+## 🚀 Quick Start - FULLY AUTOMATED
 
 1. **Clone the repository:**
    ```bash
@@ -37,59 +37,70 @@ Before installing, ensure you have:
    cd offlinedoctor
    ```
 
-2. **Run the setup script:**
-   
-   **Linux/macOS:**
+2. **Run the fully automated setup script:**
    ```bash
+   # Linux/macOS - FULLY AUTOMATED
    ./setup.sh
-   ```
    
-   **Windows:**
-   ```cmd
+   # Windows - FULLY AUTOMATED  
    setup.bat
    ```
 
+   **🎯 The setup script is COMPLETELY AUTOMATED and will:**
+   - ✅ Detect your operating system and architecture
+   - ✅ Install Node.js automatically (from official sources)
+   - ✅ Install Python automatically (from official sources)
+   - ✅ Install Ollama automatically (from official sources)
+   - ✅ Set up all Node.js dependencies
+   - ✅ Create and configure Python virtual environment
+   - ✅ Download and configure the AI medical model
+   - ✅ Create run scripts and desktop shortcuts
+   - ✅ Handle container environments seamlessly
+   - ✅ Support all major Linux distributions, macOS, and Windows
+   - ✅ No manual intervention required!
+
 3. **Start the application:**
    ```bash
-   npm start
-   ```
-
-### Manual Setup
-
-1. **Clone and install dependencies:**
-   ```bash
-   git clone https://github.com/lpolish/offlinedoctor.git
-   cd offlinedoctor
-   npm install
-   ```
-
-2. **Set up Python backend:**
-   ```bash
-   cd backend
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   deactivate
-   cd ..
-   ```
-
-3. **Install Ollama:**
-   ```bash
-   # Linux/macOS
-   curl -fsSL https://ollama.ai/install.sh | sh
+   # Use the generated run script (recommended)
+   ./run.sh          # Linux/macOS
+   run.bat           # Windows
    
-   # Windows: Download from https://ollama.ai/download
-   ```
-
-4. **Pull the medical AI model:**
-   ```bash
-   ollama pull llama2
-   ```
-
-5. **Start the application:**
-   ```bash
+   # Or use npm directly
    npm start
    ```
+
+4. **Validate your setup (optional):**
+   ```bash
+   ./test-setup.sh   # Linux/macOS - Comprehensive validation
+   ```
+
+> **🎉 Success!** The setup is designed to be 100% automated with zero manual intervention required. If you encounter any issues, the setup script provides detailed error messages and recovery suggestions.
+
+## 🔧 Supported Environments
+
+Our automated setup works seamlessly on:
+
+### Operating Systems
+- **Linux**: Ubuntu, Debian, Fedora, CentOS, Arch, openSUSE, Alpine
+- **macOS**: 10.14+ (Intel and Apple Silicon)
+- **Windows**: Windows 10/11 (x64)
+
+### Environments
+- **Native installations**
+- **Docker containers** (detects automatically)
+- **Virtual machines**
+- **Cloud instances**
+- **CI/CD environments**
+
+### Package Managers Supported
+- **Linux**: apt, dnf, pacman, zypper, apk, yum
+- **macOS**: Homebrew (optional)
+- **Windows**: PowerShell with direct downloads
+
+### Fallback Installation Methods
+- **Binary downloads** when package managers aren't available
+- **Source compilation** as last resort
+- **User-space installations** when sudo isn't available
 
 ## 📦 Building Distributables
 

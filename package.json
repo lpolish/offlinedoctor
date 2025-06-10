@@ -35,6 +35,7 @@
       "style.css",
       "assets/**/*",
       "backend/**/*",
+      "!backend/venv/**/*",
       "node_modules/**/*"
     ],
     "extraResources": [

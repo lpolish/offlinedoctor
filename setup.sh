@@ -44,10 +44,79 @@ detect_package_manager() {
     fi
 }
 
+# Function to install Node.js
+install_nodejs() {
+    echo "🔄 Installing Node.js..."
+    
+    # Detect OS
+    if [ "$(uname)" = "Darwin" ]; then
+        # macOS
+        if command_exists brew; then
+            brew install node@18
+        else
+            echo "Installing Homebrew first..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install node@18
+        fi
+    elif [ "$(uname)" = "Linux" ]; then
+        # Linux
+        if command_exists apt-get; then
+            # For Debian/Ubuntu
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        elif command_exists dnf; then
+            # For Fedora
+            sudo dnf install -y nodejs
+        elif command_exists pacman; then
+            # For Arch Linux
+            sudo pacman -Sy --noconfirm nodejs npm
+        elif command_exists zypper; then
+            # For openSUSE
+            sudo zypper install -y nodejs18
+        else
+            echo "⚠️ Could not automatically install Node.js."
+            echo "Please install Node.js 16+ manually from https://nodejs.org/"
+            exit 1
+        fi
+    fi
+}
+
+# Function to install Python
+install_python() {
+    echo "🔄 Installing Python..."
+    
+    if [ "$(uname)" = "Darwin" ]; then
+        # macOS
+        if command_exists brew; then
+            brew install python@3.10
+        else
+            echo "Installing Homebrew first..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install python@3.10
+        fi
+    elif [ "$(uname)" = "Linux" ]; then
+        # Linux
+        if command_exists apt-get; then
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip python3-venv
+        elif command_exists dnf; then
+            sudo dnf install -y python3 python3-pip python3-virtualenv
+        elif command_exists pacman; then
+            sudo pacman -Sy --noconfirm python python-pip
+        elif command_exists zypper; then
+            sudo zypper install -y python3 python3-pip python3-virtualenv
+        else
+            echo "⚠️ Could not automatically install Python."
+            echo "Please install Python 3.7+ manually from https://python.org/"
+            exit 1
+        fi
+    fi
+}
+
 echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
 echo "=================================================="
 
-# Check root access at the start
+# Check if we have root access at the start
 check_root_access || exit 1
 
 # Check if we're in the right directory
@@ -67,8 +136,15 @@ if command_exists node; then
     node_version=$(node --version)
     echo "✅ Node.js found: $node_version"
 else
-    echo "❌ Node.js not found. Please install Node.js 16+ from https://nodejs.org/"
-    exit 1
+    echo "Node.js not found. Installing..."
+    install_nodejs
+    # Verify installation
+    if ! command_exists node; then
+        echo "❌ Node.js installation failed."
+        exit 1
+    fi
+    node_version=$(node --version)
+    echo "✅ Node.js installed: $node_version"
 fi
 
 # Check npm
@@ -76,8 +152,18 @@ if command_exists npm; then
     npm_version=$(npm --version)
     echo "✅ npm found: $npm_version"
 else
-    echo "❌ npm not found. Please install npm"
-    exit 1
+    echo "Installing npm..."
+    if [ "$(uname)" = "Linux" ]; then
+        if command_exists apt-get; then
+            sudo apt-get install -y npm
+        elif command_exists dnf; then
+            sudo dnf install -y npm
+        elif command_exists pacman; then
+            sudo pacman -Sy --noconfirm npm
+        elif command_exists zypper; then
+            sudo zypper install -y npm
+        fi
+    fi
 fi
 
 # Check Python
@@ -87,10 +173,22 @@ if command_exists python3; then
     echo "✅ Python3 found: $python_version"
 elif command_exists python; then
     python_version=$(python --version)
-    echo "✅ Python found: $python_version"
+    if [[ $python_version == Python\ 3* ]]; then
+        echo "✅ Python found: $python_version"
+    else
+        echo "Python 2 detected. Installing Python 3..."
+        install_python
+    fi
 else
-    echo "❌ Python not found. Please install Python 3.7+ from https://python.org/"
-    exit 1
+    echo "Python not found. Installing..."
+    install_python
+    # Verify installation
+    if ! command_exists python3; then
+        echo "❌ Python installation failed."
+        exit 1
+    fi
+    python_version=$(python3 --version)
+    echo "✅ Python installed: $python_version"
 fi
 
 # Install Node.js dependencies

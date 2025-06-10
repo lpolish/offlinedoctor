@@ -12,15 +12,31 @@ if not exist "package.json" (
     exit /b 1
 )
 
-REM Check Node.js
+REM Check for Node.js
 echo 📦 Checking Node.js installation...
 node --version >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "tokens=*" %%i in ('node --version') do echo ✅ Node.js found: %%i
 ) else (
-    echo ❌ Node.js not found. Please install Node.js 16+ from https://nodejs.org/
-    pause
-    exit /b 1
+    echo Node.js not found. Installing...
+    echo Downloading Node.js installer...
+    powershell -Command "& {Invoke-WebRequest -Uri 'https://nodejs.org/dist/v18.17.1/node-v18.17.1-x64.msi' -OutFile 'node_installer.msi'}"
+    echo Installing Node.js...
+    msiexec /i node_installer.msi /qn
+    del node_installer.msi
+    echo ✅ Node.js installed
+    
+    REM Add Node.js to PATH for current session
+    set "PATH=%PATH%;%ProgramFiles%\nodejs"
+    
+    REM Verify installation
+    node --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo ❌ Node.js installation failed.
+        pause
+        exit /b 1
+    )
+    for /f "tokens=*" %%i in ('node --version') do echo ✅ Node.js installed: %%i
 )
 
 REM Check npm
@@ -39,9 +55,24 @@ python --version >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "tokens=*" %%i in ('python --version') do echo ✅ Python found: %%i
 ) else (
-    echo ❌ Python not found. Please install Python 3.7+ from https://python.org/
-    pause
-    exit /b 1
+    echo Python not found. Installing...
+    echo Downloading Python installer...
+    powershell -Command "& {Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe' -OutFile 'python_installer.exe'}"
+    echo Installing Python...
+    python_installer.exe /quiet InstallAllUsers=1 PrependPath=1
+    del python_installer.exe
+    
+    REM Add Python to PATH for current session
+    set "PATH=%PATH%;%LocalAppData%\Programs\Python\Python310;%LocalAppData%\Programs\Python\Python310\Scripts"
+    
+    REM Verify installation
+    python --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo ❌ Python installation failed.
+        pause
+        exit /b 1
+    )
+    for /f "tokens=*" %%i in ('python --version') do echo ✅ Python installed: %%i
 )
 
 REM Install Node.js dependencies
@@ -73,12 +104,19 @@ ollama --version >nul 2>&1
 if %errorlevel% equ 0 (
     for /f "tokens=*" %%i in ('ollama --version 2^>nul') do echo ✅ Ollama found: %%i
 ) else (
-    echo 🔄 Ollama not found. Please install Ollama manually:
-    echo    1. Download from https://ollama.ai/download
-    echo    2. Run the installer
-    echo    3. Restart this script
-    pause
-    exit /b 1
+    echo 🔄 Installing Ollama...
+    powershell -Command "& {Invoke-WebRequest -Uri 'https://ollama.ai/download/ollama-windows.exe' -OutFile 'ollama-installer.exe'}"
+    ollama-installer.exe /S
+    del ollama-installer.exe
+    
+    REM Verify installation
+    ollama --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo ❌ Ollama installation failed.
+        pause
+        exit /b 1
+    )
+    for /f "tokens=*" %%i in ('ollama --version 2^>nul') do echo ✅ Ollama installed: %%i
 )
 
 REM Start Ollama service

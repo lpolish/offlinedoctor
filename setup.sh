@@ -2,122 +2,28 @@
 
 # Offline Doctor Setup Script for Linux/macOS
 # This script sets up the complete environment for the Offline Doctor application
+# Supports both Docker and local development workflows
 
 set -e
 
-# Function to check if we have root access
-check_root_access() {
-    # First check if we're already root
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to check if we need sudo and can use it
+can_sudo() {
     if [ "$(id -u)" = "0" ]; then
-        echo "✅ Running as root"
         return 0
-    fi
-    
-    # If not root, check if we can use sudo
-    if sudo -n true 2>/dev/null; then
-        echo "✅ Sudo access available"
+    elif command_exists sudo && sudo -n true 2>/dev/null; then
         return 0
     else
-        echo "❌ This script needs root privileges for some operations"
-        echo "Please run as root or make sure you have sudo access"
-        echo "You can try: sudo ./setup.sh"
         return 1
-    fi
-}
-
-# Function to detect package manager
-detect_package_manager() {
-    if command -v apt-get >/dev/null; then
-        echo "apt"
-    elif command -v dnf >/dev/null; then
-        echo "dnf"
-    elif command -v yum >/dev/null; then
-        echo "yum"
-    elif command -v pacman >/dev/null; then
-        echo "pacman"
-    elif command -v zypper >/dev/null; then
-        echo "zypper"
-    elif command -v brew >/dev/null; then
-        echo "brew"
-    else
-        echo "unknown"
-    fi
-}
-
-# Function to install Node.js
-install_nodejs() {
-    echo "🔄 Installing Node.js..."
-    
-    # Detect OS
-    if [ "$(uname)" = "Darwin" ]; then
-        # macOS
-        if command_exists brew; then
-            brew install node@18
-        else
-            echo "Installing Homebrew first..."
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            brew install node@18
-        fi
-    elif [ "$(uname)" = "Linux" ]; then
-        # Linux
-        if command_exists apt-get; then
-            # For Debian/Ubuntu
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-        elif command_exists dnf; then
-            # For Fedora
-            sudo dnf install -y nodejs
-        elif command_exists pacman; then
-            # For Arch Linux
-            sudo pacman -Sy --noconfirm nodejs npm
-        elif command_exists zypper; then
-            # For openSUSE
-            sudo zypper install -y nodejs18
-        else
-            echo "⚠️ Could not automatically install Node.js."
-            echo "Please install Node.js 16+ manually from https://nodejs.org/"
-            exit 1
-        fi
-    fi
-}
-
-# Function to install Python
-install_python() {
-    echo "🔄 Installing Python..."
-    
-    if [ "$(uname)" = "Darwin" ]; then
-        # macOS
-        if command_exists brew; then
-            brew install python@3.10
-        else
-            echo "Installing Homebrew first..."
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            brew install python@3.10
-        fi
-    elif [ "$(uname)" = "Linux" ]; then
-        # Linux
-        if command_exists apt-get; then
-            sudo apt-get update
-            sudo apt-get install -y python3 python3-pip python3-venv
-        elif command_exists dnf; then
-            sudo dnf install -y python3 python3-pip python3-virtualenv
-        elif command_exists pacman; then
-            sudo pacman -Sy --noconfirm python python-pip
-        elif command_exists zypper; then
-            sudo zypper install -y python3 python3-pip python3-virtualenv
-        else
-            echo "⚠️ Could not automatically install Python."
-            echo "Please install Python 3.7+ manually from https://python.org/"
-            exit 1
-        fi
     fi
 }
 
 echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
 echo "=================================================="
-
-# Check if we have root access at the start
-check_root_access || exit 1
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
@@ -130,74 +36,24 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Check Node.js
-echo "📦 Checking Node.js installation..."
-if command_exists node; then
-    node_version=$(node --version)
-    echo "✅ Node.js found: $node_version"
-else
-    echo "Node.js not found. Installing..."
-    install_nodejs
-    # Verify installation
-    if ! command_exists node; then
-        echo "❌ Node.js installation failed."
-        exit 1
-    fi
-    node_version=$(node --version)
-    echo "✅ Node.js installed: $node_version"
+# Setup based on chosen mode
+if [ "$dev_mode" = "1" ] || [ "$dev_mode" = "3" ]; then
+    echo "🐳 Setting up Docker environment..."
+    docker compose up -d
+    echo "⏳ Waiting for services to be ready..."
+    sleep 5
 fi
 
-# Check npm
-if command_exists npm; then
-    npm_version=$(npm --version)
-    echo "✅ npm found: $npm_version"
-else
-    echo "Installing npm..."
-    if [ "$(uname)" = "Linux" ]; then
-        if command_exists apt-get; then
-            sudo apt-get install -y npm
-        elif command_exists dnf; then
-            sudo dnf install -y npm
-        elif command_exists pacman; then
-            sudo pacman -Sy --noconfirm npm
-        elif command_exists zypper; then
-            sudo zypper install -y npm
-        fi
-    fi
-fi
-
-# Check Python
-echo "🐍 Checking Python installation..."
-if command_exists python3; then
-    python_version=$(python3 --version)
-    echo "✅ Python3 found: $python_version"
-elif command_exists python; then
-    python_version=$(python --version)
-    if [[ $python_version == Python\ 3* ]]; then
-        echo "✅ Python found: $python_version"
-    else
-        echo "Python 2 detected. Installing Python 3..."
-        install_python
-    fi
-else
-    echo "Python not found. Installing..."
-    install_python
-    # Verify installation
-    if ! command_exists python3; then
-        echo "❌ Python installation failed."
-        exit 1
-    fi
-    python_version=$(python3 --version)
-    echo "✅ Python installed: $python_version"
-fi
-
-# Install Node.js dependencies
-echo "📦 Installing Node.js dependencies..."
-npm install
-
-# Set up Python virtual environment
-echo "🐍 Setting up Python backend..."
-cd backend
+if [ "$dev_mode" = "2" ] || [ "$dev_mode" = "3" ]; then
+    echo "🔧 Setting up local development environment..."
+    
+    # Install Node.js dependencies
+    echo "📦 Installing Node.js dependencies..."
+    npm install
+    
+    # Set up Python virtual environment
+    echo "🐍 Setting up Python backend..."
+    cd backend
 
 # Create virtual environment
 if [ ! -d "venv" ]; then
@@ -258,6 +114,85 @@ else
     echo "Downloading tinyllama model..."
     ollama pull tinyllama
 fi
+
+# Ask user for development mode preference
+echo "Select development mode:"
+echo "1) Docker (recommended for building and distribution)"
+echo "2) Local (recommended for development)"
+echo "3) Both (full setup)"
+read -p "Enter choice [1-3]: " dev_mode
+
+case $dev_mode in
+    1)
+        if ! command_exists docker; then
+            echo "🐳 Docker not found. Installing Docker..."
+            if can_sudo; then
+                if command_exists apt-get; then
+                    sudo apt-get update
+                    sudo apt-get install -y docker.io
+                elif command_exists dnf; then
+                    sudo dnf install -y docker
+                elif command_exists pacman; then
+                    sudo pacman -Sy --noconfirm docker
+                elif command_exists zypper; then
+                    sudo zypper install -y docker
+                else
+                    echo "❌ Could not install Docker automatically."
+                    echo "Please install Docker manually:"
+                    echo "https://docs.docker.com/engine/install/"
+                    exit 1
+                fi
+                sudo systemctl start docker
+                sudo systemctl enable docker
+                if [ -n "$SUDO_USER" ]; then
+                    sudo usermod -aG docker "$SUDO_USER"
+                fi
+            else
+                echo "❌ Need sudo access to install Docker"
+                exit 1
+            fi
+        fi
+        ;;
+    2|3)
+        # Install development dependencies
+        echo "🔧 Installing development dependencies..."
+        
+        # Node.js
+        if ! command_exists node; then
+            echo "Installing Node.js..."
+            if command_exists apt-get && can_sudo; then
+                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            elif command_exists dnf && can_sudo; then
+                sudo dnf install -y nodejs
+            elif command_exists pacman && can_sudo; then
+                sudo pacman -Sy --noconfirm nodejs npm
+            elif command_exists brew; then
+                brew install node@18
+            else
+                echo "⚠️ Please install Node.js manually from https://nodejs.org/"
+                exit 1
+            fi
+        fi
+        
+        # Python
+        if ! command_exists python3; then
+            echo "Installing Python..."
+            if command_exists apt-get && can_sudo; then
+                sudo apt-get install -y python3 python3-pip python3-venv
+            elif command_exists dnf && can_sudo; then
+                sudo dnf install -y python3 python3-pip python3-virtualenv
+            elif command_exists pacman && can_sudo; then
+                sudo pacman -Sy --noconfirm python python-pip
+            elif command_exists brew; then
+                brew install python@3.10
+            else
+                echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
+                exit 1
+            fi
+        fi
+        ;;
+esac
 
 # Create desktop entry (Linux only)
 if [ "$(uname)" = "Linux" ]; then

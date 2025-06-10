@@ -18,7 +18,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["medical", "ai", "offline", "doctor", "health", "ollama", "electron"],
-  "author": "Offline Doctor Team",
+  "author": {
+    "name": "Luis Pulido Diaz",
+    "email": "luis@luispulido.com"
+  },
   "license": "MIT",
   "type": "commonjs",
   "build": {

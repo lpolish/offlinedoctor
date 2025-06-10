@@ -100,6 +100,23 @@ run_elevated() {
     fi
 }
 
+# Function to configure non-interactive environment
+setup_noninteractive() {
+    # Set timezone to UTC to avoid tzdata prompts
+    export TZ=UTC
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Configure tzdata non-interactively if in container or can elevate
+    if in_container || can_elevate; then
+        if command_exists timedatectl; then
+            run_elevated timedatectl set-timezone UTC 2>/dev/null || true
+        elif [ -f /etc/timezone ]; then
+            echo "UTC" | run_elevated tee /etc/timezone > /dev/null 2>&1 || true
+            run_elevated dpkg-reconfigure -f noninteractive tzdata 2>/dev/null || true
+        fi
+    fi
+}
+
 # Function to install Node.js
 install_nodejs() {
     print_status "Installing Node.js..."
@@ -115,6 +132,8 @@ install_nodejs() {
     case "$os" in
         "debian")
             if in_container || can_elevate; then
+                # Set up non-interactive environment for package installation
+                export DEBIAN_FRONTEND=noninteractive
                 run_elevated apt-get update -qq
                 curl -fsSL https://deb.nodesource.com/setup_18.x | run_elevated bash -
                 run_elevated apt-get install -y nodejs
@@ -228,6 +247,8 @@ install_python() {
     case "$os" in
         "debian")
             if in_container || can_elevate; then
+                # Set up non-interactive environment for package installation
+                export DEBIAN_FRONTEND=noninteractive
                 run_elevated apt-get update -qq
                 run_elevated apt-get install -y python3 python3-pip python3-venv
             else
@@ -380,6 +401,8 @@ install_gui_deps() {
     case "$os" in
         "debian")
             if can_elevate; then
+                # Set up non-interactive environment for package installation
+                export DEBIAN_FRONTEND=noninteractive
                 run_elevated apt-get update -qq
                 run_elevated apt-get install -y --no-install-recommends \
                     libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 \
@@ -423,6 +446,9 @@ main() {
         print_error "Please run this script from the project root directory (where package.json is located)"
         exit 1
     fi
+    
+    # Set up non-interactive environment early
+    setup_noninteractive
     
     print_status "Detected OS: $(detect_os)"
     print_status "Architecture: $(get_arch)"

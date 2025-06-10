@@ -1,6 +1,10 @@
 # Dockerfile for Offline Doctor Electron app
 FROM node:20-slim as build
 
+# Set non-interactive mode and timezone to avoid tzdata prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Set working directory
 WORKDIR /app
 
@@ -16,6 +20,10 @@ RUN npm run build-linux || echo "Build skipped for cross-platform image"
 
 # -------- Runtime Stage --------
 FROM --platform=linux/amd64 node:20-slim
+
+# Set non-interactive mode and timezone to avoid tzdata prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 WORKDIR /app
 

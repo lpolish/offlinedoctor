@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - OLLAMA_HOST=http://host.docker.internal:11434
+      - TZ=UTC
+      - DEBIAN_FRONTEND=noninteractive
     ports:
       - "5000:5000"
     volumes:
@@ -17,6 +19,8 @@ services:
     command: npm start
     environment:
       - OLLAMA_HOST=http://backend:5000
+      - TZ=UTC
+      - DEBIAN_FRONTEND=noninteractive
     ports:
       - "3000:3000"
       
@@ -30,5 +34,6 @@ services:
       - "4000:4000"
     environment:
       - JEKYLL_ENV=production
+      - TZ=UTC
     depends_on:
       - backend

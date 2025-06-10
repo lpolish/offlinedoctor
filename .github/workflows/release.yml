@@ -10,11 +10,20 @@ jobs:
   build-linux:
     name: Build Linux Packages
     runs-on: ubuntu-latest
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: UTC
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      
+      - name: Setup timezone
+        run: |
+          sudo timedatectl set-timezone UTC
+          echo "UTC" | sudo tee /etc/timezone
+          sudo dpkg-reconfigure -f noninteractive tzdata
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -50,6 +59,8 @@ jobs:
   build-windows:
     name: Build Windows Packages
     runs-on: windows-latest
+    env:
+      TZ: UTC
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,6 +97,8 @@ jobs:
   build-macos:
     name: Build macOS Packages
     runs-on: macos-latest
+    env:
+      TZ: UTC
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

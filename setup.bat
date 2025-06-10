@@ -5,6 +5,9 @@ REM Offline Doctor Setup Script for Windows
 REM FULLY AUTOMATED - No manual intervention required
 REM Handles all Windows environments including containers
 
+REM Set timezone to UTC to avoid interactive prompts
+set TZ=UTC
+
 echo.
 echo 🏥 Offline Doctor - Fully Automated Setup
 echo ===========================================

@@ -39,6 +39,12 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
 
+# GitHub Pages specific settings
+github: [metadata]
+kramdown:
+  input: GFM
+  hard_wrap: false
+  
 # Exclude from processing
 exclude:
   - Gemfile
@@ -49,4 +55,5 @@ exclude:
   - .sass-cache
   - .jekyll-cache
   - .jekyll-metadata
+  - README.md
   - vendor/bundle

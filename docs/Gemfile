@@ -1,14 +1,14 @@
 source "https://rubygems.org"
 
-# Use a stable Jekyll version that works well with GitHub Pages
+# Use Jekyll version compatible with GitHub Pages
 gem "jekyll", "~> 4.2.2"
 gem "jekyll-theme-cayman"
 gem "jekyll-seo-tag"
 gem "jekyll-sitemap"
-gem "jekyll-feed", "~> 0.12"
+gem "jekyll-feed", "~> 0.17"
 
 # Required for Ruby 3.0+
-gem "webrick", "~> 1.7"
+gem "webrick", "~> 1.8"
 
 # Windows and JRuby compatibility
 platforms :mingw, :x64_mingw, :mswin, :jruby do

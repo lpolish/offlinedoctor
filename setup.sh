@@ -195,11 +195,73 @@ fi
 # Create run script
 cat > run.sh << 'EOF'
 #!/bin/bash
+
+# Function to check if a package is installed
+check_package() {
+    if command -v dpkg >/dev/null 2>&1; then
+        dpkg -l "$1" >/dev/null 2>&1
+    elif command -v rpm >/dev/null 2>&1; then
+        rpm -q "$1" >/dev/null 2>&1
+    elif command -v pacman >/dev/null 2>&1; then
+        pacman -Qi "$1" >/dev/null 2>&1
+    else
+        return 1
+    fi
+}
+
+# Function to install required dependencies
+install_dependencies() {
+    local packages="libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2"
+    
+    if [ "$(id -u)" != "0" ]; then
+        echo "Installing dependencies requires root privileges..."
+        if sudo -n true 2>/dev/null; then
+            SUDO="sudo"
+        else
+            echo "Please run with sudo or as root to install required dependencies"
+            exit 1
+        fi
+    fi
+
+    if command -v apt-get >/dev/null 2>&1; then
+        $SUDO apt-get update
+        $SUDO apt-get install -y $packages
+    elif command -v dnf >/dev/null 2>&1; then
+        $SUDO dnf install -y glib2 nss atk at-spi2-atk cups-libs gtk3 alsa-lib
+    elif command -v pacman >/dev/null 2>&1; then
+        $SUDO pacman -Sy --noconfirm glib2 nss atk at-spi2-atk cups gtk3 alsa-lib
+    else
+        echo "Unable to install dependencies automatically. Please install required libraries manually."
+        exit 1
+    fi
+}
+
+# Check and install dependencies
+for pkg in libglib-2.0.so.0 libnss3.so libatk-1.0.so.0; do
+    if ! ldconfig -p | grep -q "$pkg"; then
+        echo "Missing required libraries. Installing dependencies..."
+        install_dependencies
+        break
+    fi
+done
+
 # Start Ollama service if not running
 if ! pgrep -f "ollama serve" > /dev/null; then
     echo "Starting Ollama service..."
     nohup ollama serve > /dev/null 2>&1 &
     sleep 2
+fi
+
+# Preserve environment when running with sudo
+if [ "$(id -u)" = "0" ]; then
+    if [ ! -z "$SUDO_USER" ]; then
+        REAL_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        export HOME="$REAL_HOME"
+        export XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")"
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+        # Run as the original user while preserving the environment
+        exec setpriv --reuid="$SUDO_USER" --regid="$SUDO_USER" --init-groups npm start
+    fi
 fi
 
 # Start the application

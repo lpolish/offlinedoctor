@@ -4,123 +4,42 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'docs/**'  # Only trigger on changes to docs directory
-      - '.github/workflows/deploy-pages.yml'  # Also trigger on workflow changes
+      - 'docs/**'
+      - '.github/workflows/deploy-pages.yml'
   release:
-    types: [published]  # Update docs when a new release is published
-  # Allows you to run this workflow manually from the Actions tab
+    types: [published]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read      # Only need read for docs
-  pages: write       # Need write for deploying to Pages
-  id-token: write    # Need write for creating the deployment
+  contents: read
+  pages: write
+  id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: docs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for proper versioning
+          fetch-depth: 0
       
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: true
-          working-directory: docs
-      
-      - name: Check for Gemfile
-        run: |
-          if [ ! -f "Gemfile" ]; then
-            echo "Creating basic Gemfile..."
-            cat > Gemfile << 'EOF'
-          source "https://rubygems.org"
-          
-          gem "jekyll", "~> 4.3.0"
-          gem "minima", "~> 2.5"
-          gem "jekyll-feed", "~> 0.12"
-          gem "jekyll-sitemap", "~> 1.4"
-          gem "jekyll-seo-tag", "~> 2.8"
-          gem "webrick", "~> 1.7"
-          
-          group :jekyll_plugins do
-            gem "jekyll-feed", "~> 0.12"
-            gem "jekyll-sitemap"
-            gem "jekyll-seo-tag"
-          end
-          EOF
-          fi
-      
-      - name: Install dependencies
-        run: |
-          bundle config set --local deployment false
-          bundle install
-      
-      - name: Check for _config.yml
-        run: |
-          if [ ! -f "_config.yml" ]; then
-            echo "Creating basic _config.yml..."
-            cat > _config.yml << 'EOF'
-          title: Offline Doctor
-          description: AI-powered offline medical assistant using Ollama
-          baseurl: ""
-          url: "https://yourusername.github.io"
-          
-          markdown: kramdown
-          highlighter: rouge
-          theme: minima
-          
-          plugins:
-            - jekyll-feed
-            - jekyll-sitemap
-            - jekyll-seo-tag
-          
-          exclude:
-            - Gemfile
-            - Gemfile.lock
-            - node_modules
-            - vendor
-            - .bundle
-            - .sass-cache
-            - .jekyll-cache
-            - .jekyll-metadata
-          EOF
-          fi
-      
+        
       - name: Build with Jekyll
-        run: |
-          bundle exec jekyll build --verbose
-        env:
-          JEKYLL_ENV: production
-      
-      - name: Test site build
-        run: |
-          echo "Checking built site structure:"
-          find _site -type f -name "*.html" | head -10
-          echo "Site built successfully!"
-      
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/_site
 
-  # Deployment job
   deploy:
     environment:
       name: github-pages

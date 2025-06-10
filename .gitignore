@@ -14,3 +14,10 @@ __pycache__/
 .DS_Store
 # IDE settings
 .vscode/
+# Jekyll build output and dependencies
+docs/_site/
+docs/vendor/
+docs/.bundle/
+docs/.sass-cache/
+docs/.jekyll-cache/
+docs/.jekyll-metadata

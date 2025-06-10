@@ -196,54 +196,68 @@ fi
 cat > run.sh << 'EOF'
 #!/bin/bash
 
-# Function to check if a package is installed
-check_package() {
-    if command -v dpkg >/dev/null 2>&1; then
-        dpkg -l "$1" >/dev/null 2>&1
-    elif command -v rpm >/dev/null 2>&1; then
-        rpm -q "$1" >/dev/null 2>&1
+# Function to detect package manager and return package names
+get_package_names() {
+    if command -v apt-get >/dev/null 2>&1; then
+        echo "libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2 libxss1 libx11-xcb1 libxtst6"
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "glib2 nss atk at-spi2-atk cups-libs gtk3 alsa-lib libX11-xcb libXtst libxshmfence"
     elif command -v pacman >/dev/null 2>&1; then
-        pacman -Qi "$1" >/dev/null 2>&1
+        echo "glib2 nss atk at-spi2-atk cups gtk3 alsa-lib libxss libxtst"
+    elif command -v zypper >/dev/null 2>&1; then
+        echo "glib2 mozilla-nss atk at-spi2-atk cups gtk3 alsa-lib libXss1 libXtst6"
     else
         return 1
     fi
 }
 
+# Function to check if we're running under Wayland
+is_wayland() {
+    [ "$XDG_SESSION_TYPE" = "wayland" ]
+}
+
 # Function to install required dependencies
 install_dependencies() {
-    local packages="libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2"
+    local packages=$(get_package_names)
+    if [ $? -ne 0 ]; then
+        echo "❌ Unsupported package manager"
+        return 1
+    fi
     
+    # Check if we need sudo
     if [ "$(id -u)" != "0" ]; then
-        echo "Installing dependencies requires root privileges..."
         if sudo -n true 2>/dev/null; then
             SUDO="sudo"
         else
-            echo "Please run with sudo or as root to install required dependencies"
-            exit 1
+            echo "❌ Installing dependencies requires root privileges"
+            echo "Please run with sudo or as root"
+            return 1
         fi
     fi
 
+    echo "📦 Installing required dependencies..."
     if command -v apt-get >/dev/null 2>&1; then
-        $SUDO apt-get update
-        $SUDO apt-get install -y $packages
+        $SUDO apt-get update -qq
+        $SUDO apt-get install -y --no-install-recommends $packages
     elif command -v dnf >/dev/null 2>&1; then
-        $SUDO dnf install -y glib2 nss atk at-spi2-atk cups-libs gtk3 alsa-lib
+        $SUDO dnf install -y $packages
     elif command -v pacman >/dev/null 2>&1; then
-        $SUDO pacman -Sy --noconfirm glib2 nss atk at-spi2-atk cups gtk3 alsa-lib
+        $SUDO pacman -Sy --needed --noconfirm $packages
+    elif command -v zypper >/dev/null 2>&1; then
+        $SUDO zypper --non-interactive install $packages
     else
-        echo "Unable to install dependencies automatically. Please install required libraries manually."
-        exit 1
+        echo "❌ Unable to install dependencies automatically"
+        echo "Please install the following packages manually:"
+        echo "$packages"
+        return 1
     fi
 }
 
-# Check and install dependencies
-for pkg in libglib-2.0.so.0 libnss3.so libatk-1.0.so.0; do
-    if ! ldconfig -p | grep -q "$pkg"; then
-        echo "Missing required libraries. Installing dependencies..."
-        install_dependencies
-        break
-    fi
-done
+# Check for required libraries and install if missing
+if ! ldconfig -p | grep -q "libglib-2.0.so.0\|libnss3.so\|libatk-1.0.so.0\|libgtk-3.so.0"; then
+    echo "🔍 Missing required libraries"
+    install_dependencies || exit 1
+fi
 
 # Start Ollama service if not running
 if ! pgrep -f "ollama serve" > /dev/null; then
@@ -252,19 +266,52 @@ if ! pgrep -f "ollama serve" > /dev/null; then
     sleep 2
 fi
 
-# Preserve environment when running with sudo
+# Set up environment for running as root
 if [ "$(id -u)" = "0" ]; then
     if [ ! -z "$SUDO_USER" ]; then
-        REAL_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+        # Get the original user's information
+        REAL_USER="$SUDO_USER"
+        REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+        REAL_UID=$(id -u "$REAL_USER")
+        
+        # Set up environment variables
         export HOME="$REAL_HOME"
-        export XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")"
+        export XDG_RUNTIME_DIR="/run/user/$REAL_UID"
         export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
-        # Run as the original user while preserving the environment
-        exec setpriv --reuid="$SUDO_USER" --regid="$SUDO_USER" --init-groups npm start
+        
+        # Set display for X11/Wayland
+        if is_wayland; then
+            export WAYLAND_DISPLAY="wayland-0"
+        else
+            export DISPLAY=":0"
+        fi
+        
+        # Try different methods to drop privileges
+        if command -v runuser >/dev/null 2>&1; then
+            exec runuser -u "$REAL_USER" -- npm start
+        elif command -v su >/dev/null 2>&1; then
+            exec su -c "npm start" "$REAL_USER"
+        elif command -v setpriv >/dev/null 2>&1; then
+            exec setpriv --reuid="$REAL_USER" --regid="$REAL_USER" --init-groups npm start
+        else
+            echo "❌ Unable to drop root privileges safely"
+            echo "Please run the application as a regular user:"
+            echo "sudo -u $REAL_USER ./run.sh"
+            exit 1
+        fi
     fi
 fi
 
-# Start the application
+# Ensure we have a display set
+if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+    if is_wayland; then
+        export WAYLAND_DISPLAY="wayland-0"
+    else
+        export DISPLAY=":0"
+    fi
+fi
+
+# Start the application normally if not root
 npm start
 EOF
 

@@ -1,10 +1,34 @@
 #!/bin/bash
 
 # Offline Doctor Setup Script for Linux/macOS
-# This script sets up the complete environment for the Offline Doctor application
-# Supports both Docker and local development workflows
+# FULLY AUTOMATED - No manual intervention required
+# Handles containers, various Linux distributions, and macOS
 
 set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
 
 # Function to check if a command exists
 command_exists() {
@@ -13,14 +37,52 @@ command_exists() {
 
 # Function to check if we're running in a container
 in_container() {
-    [ -f /.dockerenv ] || grep -q 'docker\|lxc' /proc/1/cgroup 2>/dev/null
+    [ -f /.dockerenv ] || grep -q 'docker\|lxc' /proc/1/cgroup 2>/dev/null || [ -n "${KUBERNETES_SERVICE_HOST}" ]
 }
 
-# Function to check if we need sudo and can use it (not in container)
-can_sudo() {
-    if in_container; then
-        return 1
-    elif [ "$(id -u)" = "0" ]; then
+# Function to detect the OS
+detect_os() {
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if command_exists apt-get; then
+            echo "debian"
+        elif command_exists dnf; then
+            echo "fedora"
+        elif command_exists pacman; then
+            echo "arch"
+        elif command_exists zypper; then
+            echo "opensuse"
+        elif command_exists apk; then
+            echo "alpine"
+        elif command_exists yum; then
+            echo "rhel"
+        else
+            echo "linux"
+        fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "macos"
+    else
+        echo "unknown"
+    fi
+}
+
+# Function to get architecture
+get_arch() {
+    case "$(uname -m)" in
+        x86_64)
+            echo "x64"
+            ;;
+        aarch64|arm64)
+            echo "arm64"
+            ;;
+        *)
+            echo "x64"
+            ;;
+    esac
+}
+
+# Function to check if we can run as root or with sudo
+can_elevate() {
+    if [ "$(id -u)" = "0" ]; then
         return 0
     elif command_exists sudo && sudo -n true 2>/dev/null; then
         return 0
@@ -29,512 +91,489 @@ can_sudo() {
     fi
 }
 
-echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
-echo "=================================================="
-
-# Check if we're in a container
-if in_container; then
-    echo "📦 Running in container environment - using local development mode"
-    dev_mode="2"
-else
-    # Check if we're in the right directory
-    if [ ! -f "package.json" ]; then
-        echo "❌ Error: Please run this script from the project root directory"
-        exit 1
+# Function to run command with appropriate privileges
+run_elevated() {
+    if [ "$(id -u)" = "0" ]; then
+        "$@"
+    else
+        sudo "$@"
     fi
+}
 
-    # Ask user for development mode preference
-    echo "Select development mode:"
-    echo "1) Docker (recommended for building and distribution)"
-    echo "2) Local (recommended for development)"
-    echo "3) Both (full setup)"
-    read -p "Enter choice [1-3]: " dev_mode
-fi
-
-case $dev_mode in
-    1)
-        if ! command_exists docker; then
-            echo "🐳 Docker not found. Installing Docker..."
-            if can_sudo; then
-                if command_exists apt-get; then
-                    sudo apt-get update
-                    sudo apt-get install -y docker.io
-                elif command_exists dnf; then
-                    sudo dnf install -y docker
-                elif command_exists pacman; then
-                    sudo pacman -Sy --noconfirm docker
-                elif command_exists zypper; then
-                    sudo zypper install -y docker
-                else
-                    echo "❌ Could not install Docker automatically."
-                    echo "Please install Docker manually:"
-                    echo "https://docs.docker.com/engine/install/"
-                    exit 1
-                fi
-                sudo systemctl start docker
-                sudo systemctl enable docker
-                if [ -n "$SUDO_USER" ]; then
-                    sudo usermod -aG docker "$SUDO_USER"
-                fi
+# Function to install Node.js
+install_nodejs() {
+    print_status "Installing Node.js..."
+    
+    local os=$(detect_os)
+    local arch=$(get_arch)
+    
+    if command_exists node; then
+        print_success "Node.js already installed: $(node --version)"
+        return 0
+    fi
+    
+    case "$os" in
+        "debian")
+            if in_container || can_elevate; then
+                run_elevated apt-get update -qq
+                curl -fsSL https://deb.nodesource.com/setup_18.x | run_elevated bash -
+                run_elevated apt-get install -y nodejs
             else
-                echo "❌ Need sudo access to install Docker"
-                exit 1
+                install_nodejs_binary
             fi
-        fi
-        ;;
-    2|3)
-        # Install development dependencies
-        echo "🔧 Installing development dependencies..."
-        
-        # Node.js
-        if ! command_exists node; then
-            echo "Installing Node.js..."
-            if command_exists apt-get && can_sudo; then
-                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                sudo apt-get install -y nodejs
-            elif command_exists dnf && can_sudo; then
-                sudo dnf install -y nodejs
-            elif command_exists pacman && can_sudo; then
-                sudo pacman -Sy --noconfirm nodejs npm
-            elif command_exists brew; then
+            ;;
+        "fedora"|"rhel")
+            if in_container || can_elevate; then
+                run_elevated dnf install -y nodejs npm
+            else
+                install_nodejs_binary
+            fi
+            ;;
+        "arch")
+            if in_container || can_elevate; then
+                run_elevated pacman -Sy --noconfirm nodejs npm
+            else
+                install_nodejs_binary
+            fi
+            ;;
+        "opensuse")
+            if in_container || can_elevate; then
+                run_elevated zypper install -y nodejs18 npm18
+            else
+                install_nodejs_binary
+            fi
+            ;;
+        "alpine")
+            if in_container || can_elevate; then
+                run_elevated apk add --no-cache nodejs npm
+            else
+                install_nodejs_binary
+            fi
+            ;;
+        "macos")
+            if command_exists brew; then
                 brew install node@18
             else
-                echo "⚠️ Please install Node.js manually from https://nodejs.org/"
-                exit 1
+                install_nodejs_binary
             fi
-        fi
+            ;;
+        *)
+            install_nodejs_binary
+            ;;
+    esac
+    
+    # Verify installation
+    if command_exists node; then
+        print_success "Node.js installed: $(node --version)"
+    else
+        print_error "Failed to install Node.js"
+        exit 1
+    fi
+}
+
+# Function to install Node.js from binary
+install_nodejs_binary() {
+    print_status "Installing Node.js from official binary..."
+    
+    local arch=$(get_arch)
+    local os_type="linux"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        os_type="darwin"
+    fi
+    
+    local node_version="v18.17.1"
+    local node_filename="node-${node_version}-${os_type}-${arch}"
+    local node_url="https://nodejs.org/dist/${node_version}/${node_filename}.tar.xz"
+    
+    # Create temp directory
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir"
+    
+    # Download and extract
+    print_status "Downloading Node.js binary..."
+    curl -fsSL "$node_url" -o node.tar.xz
+    tar -xf node.tar.xz
+    
+    # Install to appropriate location
+    if can_elevate; then
+        run_elevated cp -r "${node_filename}"/* /usr/local/
+    else
+        mkdir -p "$HOME/.local"
+        cp -r "${node_filename}"/* "$HOME/.local/"
         
-        # Python
-        if ! command_exists python3; then
-            echo "Installing Python..."
-            if command_exists apt-get && can_sudo; then
-                sudo apt-get install -y python3 python3-pip python3-venv
-            elif command_exists dnf && can_sudo; then
-                sudo dnf install -y python3 python3-pip python3-virtualenv
-            elif command_exists pacman && can_sudo; then
-                sudo pacman -Sy --noconfirm python python-pip
-            elif command_exists brew; then
+        # Add to PATH
+        if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            export PATH="$HOME/.local/bin:$PATH"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+        fi
+    fi
+    
+    # Cleanup
+    cd - > /dev/null
+    rm -rf "$temp_dir"
+}
+
+# Function to install Python
+install_python() {
+    print_status "Installing Python..."
+    
+    local os=$(detect_os)
+    
+    if command_exists python3; then
+        print_success "Python already installed: $(python3 --version)"
+        return 0
+    fi
+    
+    case "$os" in
+        "debian")
+            if in_container || can_elevate; then
+                run_elevated apt-get update -qq
+                run_elevated apt-get install -y python3 python3-pip python3-venv
+            else
+                install_python_binary
+            fi
+            ;;
+        "fedora"|"rhel")
+            if in_container || can_elevate; then
+                run_elevated dnf install -y python3 python3-pip python3-virtualenv
+            else
+                install_python_binary
+            fi
+            ;;
+        "arch")
+            if in_container || can_elevate; then
+                run_elevated pacman -Sy --noconfirm python python-pip
+            else
+                install_python_binary
+            fi
+            ;;
+        "opensuse")
+            if in_container || can_elevate; then
+                run_elevated zypper install -y python3 python3-pip python3-virtualenv
+            else
+                install_python_binary
+            fi
+            ;;
+        "alpine")
+            if in_container || can_elevate; then
+                run_elevated apk add --no-cache python3 py3-pip py3-virtualenv
+            else
+                install_python_binary
+            fi
+            ;;
+        "macos")
+            if command_exists brew; then
                 brew install python@3.10
             else
-                echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
-                exit 1
+                install_python_binary
             fi
-        fi
-        ;;
-    *)
-        echo "❌ Invalid choice"
+            ;;
+        *)
+            install_python_binary
+            ;;
+    esac
+    
+    # Verify installation
+    if command_exists python3; then
+        print_success "Python installed: $(python3 --version)"
+    else
+        print_error "Failed to install Python"
         exit 1
-        ;;
-esac
+    fi
+}
 
-# Setup based on chosen mode
-if [ "$dev_mode" = "1" ] || [ "$dev_mode" = "3" ]; then
-    echo "🐳 Setting up Docker environment..."
-    docker compose up -d
-    echo "⏳ Waiting for services to be ready..."
-    sleep 5
-fi
-
-if [ "$dev_mode" = "2" ] || [ "$dev_mode" = "3" ]; then
-    echo "🔧 Setting up local development environment..."
+# Function to install Python from source (fallback)
+install_python_binary() {
+    print_warning "Installing Python from source as fallback..."
     
-    # Install Node.js dependencies
-    echo "📦 Installing Node.js dependencies..."
-    npm install
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir"
     
-    # Set up Python virtual environment
-    echo "🐍 Setting up Python backend..."
-    cd backend
+    # Download Python source
+    curl -fsSL https://www.python.org/ftp/python/3.10.11/Python-3.10.11.tgz -o python.tgz
+    tar -xf python.tgz
+    cd Python-3.10.11
+    
+    # Configure and compile
+    ./configure --prefix="$HOME/.local" --enable-optimizations
+    make -j$(nproc 2>/dev/null || echo 1)
+    make install
+    
+    # Add to PATH
+    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        export PATH="$HOME/.local/bin:$PATH"
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
+    fi
+    
+    # Cleanup
+    cd - > /dev/null
+    rm -rf "$temp_dir"
+}
 
-# Create virtual environment
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment and install dependencies
-echo "Installing Python dependencies..."
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-deactivate
-
-cd ..
-
-# Check for Ollama
-echo "🤖 Checking Ollama installation..."
-if command_exists ollama; then
-    ollama_version=$(ollama --version 2>/dev/null || echo "unknown")
-    echo "✅ Ollama found: $ollama_version"
-else
-    echo "🔄 Ollama not found. Installing Ollama..."
+# Function to install Ollama
+install_ollama() {
+    print_status "Installing Ollama..."
+    
+    if command_exists ollama; then
+        print_success "Ollama already installed: $(ollama --version 2>/dev/null || echo 'installed')"
+        return 0
+    fi
+    
+    # Try official installer first
     if command_exists curl; then
         curl -fsSL https://ollama.ai/install.sh | sh
-        echo "✅ Ollama installed successfully"
+    elif command_exists wget; then
+        wget -qO- https://ollama.ai/install.sh | sh
     else
-        echo "❌ curl not found. Please install Ollama manually from https://ollama.ai/"
-        echo "   Run: curl -fsSL https://ollama.ai/install.sh | sh"
-    fi
-fi
-
-# Start Ollama service (if not running)
-echo "🚀 Starting Ollama service..."
-if ! pgrep -f "ollama serve" > /dev/null; then
-    echo "Starting Ollama in background..."
-    nohup ollama serve > /dev/null 2>&1 &
-    sleep 5
-fi
-
-# Pull medical model
-echo "🤖 Pulling medical AI model..."
-ollama pull llama2 || {
-    echo "❌ Failed to pull the medical model. Please check your internet connection and try again."
-    echo "You can manually pull the model later with: ollama pull llama2"
-    exit 1
-}
-
-echo ""
-echo "✅ Setup completed successfully!"
-
-# Create run script
-cat > run.sh << 'ENDOFSCRIPT'
-#!/bin/bash
-
-# Import helper functions
-$(declare -f command_exists)
-$(declare -f in_container)
-$(declare -f can_sudo)
-
-case $dev_mode in
-    1)
-        if ! command_exists docker; then
-            echo "🐳 Docker not found. Installing Docker..."
-            if can_sudo; then
-                if command_exists apt-get; then
-                    sudo apt-get update
-                    sudo apt-get install -y docker.io
-                elif command_exists dnf; then
-                    sudo dnf install -y docker
-                elif command_exists pacman; then
-                    sudo pacman -Sy --noconfirm docker
-                elif command_exists zypper; then
-                    sudo zypper install -y docker
-                else
-                    echo "❌ Could not install Docker automatically."
-                    echo "Please install Docker manually:"
-                    echo "https://docs.docker.com/engine/install/"
-                    exit 1
-                fi
-                sudo systemctl start docker
-                sudo systemctl enable docker
-                if [ -n "$SUDO_USER" ]; then
-                    sudo usermod -aG docker "$SUDO_USER"
-                fi
-            else
-                echo "❌ Need sudo access to install Docker"
-                exit 1
-            fi
-        fi
-        ;;
-    2|3)
-        # Install development dependencies
-        echo "🔧 Installing development dependencies..."
-        
-        # Node.js
-        if ! command_exists node; then
-            echo "Installing Node.js..."
-            if command_exists apt-get && can_sudo; then
-                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-                sudo apt-get install -y nodejs
-            elif command_exists dnf && can_sudo; then
-                sudo dnf install -y nodejs
-            elif command_exists pacman && can_sudo; then
-                sudo pacman -Sy --noconfirm nodejs npm
-            elif command_exists brew; then
-                brew install node@18
-            else
-                echo "⚠️ Please install Node.js manually from https://nodejs.org/"
-                exit 1
-            fi
+        # Manual installation
+        local os_type="linux"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            os_type="darwin"
         fi
         
-        # Python
-        if ! command_exists python3; then
-            echo "Installing Python..."
-            if command_exists apt-get && can_sudo; then
-                sudo apt-get install -y python3 python3-pip python3-venv
-            elif command_exists dnf && can_sudo; then
-                sudo dnf install -y python3 python3-pip python3-virtualenv
-            elif command_exists pacman && can_sudo; then
-                sudo pacman -Sy --noconfirm python python-pip
-            elif command_exists brew; then
-                brew install python@3.10
-            else
-                echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
-                exit 1
-            fi
-        fi
-        ;;
-esac
-
-# Create desktop entry (Linux only)
-if [ "$(uname)" = "Linux" ]; then
-    echo "🖥️  Creating desktop entry..."
-    
-    # Determine the appropriate applications directory and user
-    if [ "$(id -u)" = "0" ]; then
-        if [ ! -z "$SUDO_USER" ]; then
-            # If running with sudo, use the original user's home directory
-            REAL_USER="$SUDO_USER"
-            REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
-            APPS_DIR="${REAL_HOME}/.local/share/applications"
+        local arch=$(get_arch)
+        local ollama_url="https://github.com/ollama/ollama/releases/latest/download/ollama-${os_type}-${arch}"
+        
+        print_status "Downloading Ollama binary..."
+        if command_exists curl; then
+            curl -fsSL "$ollama_url" -o ollama
+        elif command_exists wget; then
+            wget -q "$ollama_url" -O ollama
         else
-            # If running as direct root, use system-wide directory
-            APPS_DIR="/usr/share/applications"
-        fi
-    else
-        # For regular user, use local applications directory
-        APPS_DIR="${HOME}/.local/share/applications"
-    fi
-    
-    # Create the directory if it doesn't exist
-    mkdir -p "${APPS_DIR}"
-    
-    cat > "${APPS_DIR}/offline-doctor.desktop" << EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Offline Doctor
-Comment=AI-powered offline medical assistant
-Exec=$(pwd)/run.sh
-Icon=$(pwd)/assets/icon.png
-Terminal=false
-StartupWMClass=Offline Doctor
-Categories=Science;Education;MedicalSoftware;
-EOF
-    chmod +x "${APPS_DIR}/offline-doctor.desktop"
-    echo "✅ Desktop entry created in ${APPS_DIR}"
-fi
-
-# Create run script
-cat > run.sh << 'EOF'
-#!/bin/bash
-
-# Function to detect package manager and return package names
-get_package_names() {
-    if command -v apt-get >/dev/null 2>&1; then
-        echo "libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2 libxss1 libx11-xcb1 libxtst6"
-    elif command -v dnf >/dev/null 2>&1; then
-        echo "glib2 nss atk at-spi2-atk cups-libs gtk3 alsa-lib libX11-xcb libXtst libxshmfence"
-    elif command -v pacman >/dev/null 2>&1; then
-        echo "glib2 nss atk at-spi2-atk cups gtk3 alsa-lib libxss libxtst"
-    elif command -v zypper >/dev/null 2>&1; then
-        echo "glib2 mozilla-nss atk at-spi2-atk cups gtk3 alsa-lib libXss1 libXtst6"
-    else
-        return 1
-    fi
-}
-
-# Function to check if we're running under Wayland
-is_wayland() {
-    [ "$XDG_SESSION_TYPE" = "wayland" ]
-}
-
-# Function to install required dependencies
-install_dependencies() {
-    local packages=$(get_package_names)
-    if [ $? -ne 0 ]; then
-        echo "❌ Unsupported package manager"
-        return 1
-    fi
-    
-    # Check if we need sudo
-    if [ "$(id -u)" != "0" ]; then
-        if sudo -n true 2>/dev/null; then
-            SUDO="sudo"
-        else
-            echo "❌ Installing dependencies requires root privileges"
-            echo "Please run with sudo or as root"
-            return 1
-        fi
-    fi
-
-    echo "📦 Installing required dependencies..."
-    if command_exists apt-get; then
-        $SUDO apt-get update -qq
-        $SUDO apt-get install -y --no-install-recommends $packages
-    elif command_exists dnf; then
-        $SUDO dnf install -y $packages
-    elif command_exists pacman; then
-        $SUDO pacman -Sy --needed --noconfirm $packages
-    elif command_exists zypper; then
-        $SUDO zypper --non-interactive install $packages
-    else
-        echo "❌ Unable to install dependencies automatically"
-        echo "Please install the following packages manually:"
-        echo "$packages"
-        return 1
-    fi
-}
-
-# Check for required dependencies
-check_dependency() {
-    local cmd=$1
-    local name=$2
-    local install_cmd=$3
-    
-    if ! command_exists "$cmd"; then
-        echo "❌ $name not found"
-        if can_sudo; then
-            echo "Installing $name..."
-            if ! eval "$install_cmd"; then
-                echo "Failed to install $name. Please install it manually."
-                exit 1
-            fi
-        else
-            echo "Please install $name manually and run this script again."
+            print_error "Neither curl nor wget available for downloading Ollama"
             exit 1
         fi
-    else
-        echo "✅ $name found: $($cmd --version)"
+        
+        chmod +x ollama
+        
+        if can_elevate; then
+            run_elevated mv ollama /usr/local/bin/
+        else
+            mkdir -p "$HOME/.local/bin"
+            mv ollama "$HOME/.local/bin/"
+        fi
     fi
+    
+    # Verify installation
+    if command_exists ollama; then
+        print_success "Ollama installed successfully"
+    else
+        print_error "Failed to install Ollama"
+        exit 1
+    fi
+}
+
+# Function to install GUI dependencies (for Electron)
+install_gui_deps() {
+    print_status "Installing GUI dependencies for Electron..."
+    
+    local os=$(detect_os)
+    
+    # Skip if in container without display
+    if in_container && [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+        print_warning "Skipping GUI dependencies in headless container"
+        return 0
+    fi
+    
+    case "$os" in
+        "debian")
+            if can_elevate; then
+                run_elevated apt-get update -qq
+                run_elevated apt-get install -y --no-install-recommends \
+                    libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 \
+                    libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2 \
+                    libxss1 libx11-xcb1 libxtst6 xvfb
+            fi
+            ;;
+        "fedora"|"rhel")
+            if can_elevate; then
+                run_elevated dnf install -y \
+                    glib2 nss atk at-spi2-atk cups-libs gtk3 \
+                    alsa-lib libX11-xcb libXtst libxshmfence xorg-x11-server-Xvfb
+            fi
+            ;;
+        "arch")
+            if can_elevate; then
+                run_elevated pacman -Sy --noconfirm \
+                    glib2 nss atk at-spi2-atk cups gtk3 \
+                    alsa-lib libxss libxtst xorg-server-xvfb
+            fi
+            ;;
+        "alpine")
+            if can_elevate; then
+                run_elevated apk add --no-cache \
+                    glib nss atk at-spi2-atk cups gtk+3.0 \
+                    alsa-lib libxss libxtst6 xvfb
+            fi
+            ;;
+    esac
+}
+
+# Main installation function
+main() {
+    echo ""
+    echo "🏥 Offline Doctor - Fully Automated Setup"
+    echo "==========================================="
+    echo ""
+    
+    # Check if we're in the right directory
+    if [ ! -f "package.json" ]; then
+        print_error "Please run this script from the project root directory (where package.json is located)"
+        exit 1
+    fi
+    
+    print_status "Detected OS: $(detect_os)"
+    print_status "Architecture: $(get_arch)"
+    
+    if in_container; then
+        print_status "Running in container environment"
+    fi
+    
+    # Install core dependencies
+    install_nodejs
+    install_python
+    install_ollama
+    install_gui_deps
+    
+    # Install npm dependencies
+    print_status "Installing Node.js dependencies..."
+    npm install
+    print_success "Node.js dependencies installed"
+    
+    # Set up Python backend
+    print_status "Setting up Python backend..."
+    cd backend
+    
+    # Create virtual environment
+    if [ ! -d "venv" ]; then
+        print_status "Creating Python virtual environment..."
+        python3 -m venv venv
+    fi
+    
+    # Install Python dependencies
+    print_status "Installing Python dependencies..."
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    deactivate
+    cd ..
+    
+    print_success "Python backend setup complete"
+    
+    # Start Ollama service
+    print_status "Starting Ollama service..."
+    if ! pgrep -f "ollama serve" > /dev/null; then
+        nohup ollama serve > /dev/null 2>&1 &
+        sleep 3
+        print_success "Ollama service started"
+    else
+        print_success "Ollama service already running"
+    fi
+    
+    # Download AI model
+    print_status "Downloading medical AI model (this may take a while)..."
+    if ollama pull tinyllama; then
+        print_success "AI model downloaded successfully"
+    else
+        print_warning "Failed to download AI model. You can try again later with: ollama pull tinyllama"
+    fi
+    
+    # Create run script
+    print_status "Creating run script..."
+    create_run_script
+    
+    # Create desktop entry (Linux only)
+    if [[ "$(detect_os)" != "macos" ]] && [ -n "$XDG_CURRENT_DESKTOP" ]; then
+        create_desktop_entry
+    fi
+    
+    echo ""
+    print_success "🎉 Setup completed successfully!"
+    echo ""
+    echo "To start the Offline Doctor application:"
+    echo "  ./run.sh"
+    echo ""
+    echo "Or use npm:"
+    echo "  npm start"
+    echo ""
+    echo "📚 First-time usage tips:"
+    echo "  1. The AI model (tinyllama) has been downloaded"
+    echo "  2. All conversations are stored locally"
+    echo "  3. No internet connection required after setup"
+    echo "  4. Always consult healthcare professionals for serious medical concerns"
+    echo ""
+}
+
+# Function to create run script
+create_run_script() {
+    cat > run.sh << 'EOF'
+#!/bin/bash
+
+# Offline Doctor Run Script
+# Automatically starts all required services
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Check dependencies
-check_dependency "node" "Node.js" "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs"
-check_dependency "python3" "Python" "sudo apt-get install -y python3 python3-pip python3-venv"
-check_dependency "npm" "npm" "sudo apt-get install -y npm"
+if ! command_exists node; then
+    echo "❌ Node.js not found. Please run setup.sh first."
+    exit 1
+fi
 
-# Check for required libraries and install if missing
-if ! ldconfig -p | grep -q "libglib-2.0.so.0\|libnss3.so\|libatk-1.0.so.0\|libgtk-3.so.0"; then
-    echo "🔍 Missing required libraries"
-    install_dependencies || exit 1
+if ! command_exists python3; then
+    echo "❌ Python not found. Please run setup.sh first."
+    exit 1
+fi
+
+if ! command_exists ollama; then
+    echo "❌ Ollama not found. Please run setup.sh first."
+    exit 1
 fi
 
 # Start Ollama service if not running
 if ! pgrep -f "ollama serve" > /dev/null; then
-    echo "Starting Ollama service..."
+    echo "🚀 Starting Ollama service..."
     nohup ollama serve > /dev/null 2>&1 &
     sleep 2
 fi
 
-# Set up environment for running as root
-if [ "$(id -u)" = "0" ]; then
-    if [ ! -z "$SUDO_USER" ]; then
-        # Get the original user's information
-        REAL_USER="$SUDO_USER"
-        REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
-        REAL_UID=$(id -u "$REAL_USER")
-        
-        # Set up environment variables
-        export HOME="$REAL_HOME"
-        export XDG_RUNTIME_DIR="/run/user/$REAL_UID"
-        export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
-        
-        # Set display for X11/Wayland
-        if is_wayland; then
-            export WAYLAND_DISPLAY="wayland-0"
-        else
-            export DISPLAY=":0"
-        fi
-        
-        # Try different methods to drop privileges
-        if command -v runuser >/dev/null 2>&1; then
-            exec runuser -u "$REAL_USER" -- npm start
-        elif command -v su >/dev/null 2>&1; then
-            exec su -c "npm start" "$REAL_USER"
-        elif command -v setpriv >/dev/null 2>&1; then
-            exec setpriv --reuid="$REAL_USER" --regid="$REAL_USER" --init-groups npm start
-        else
-            echo "❌ Unable to drop root privileges safely"
-            echo "Please run the application as a regular user:"
-            echo "sudo -u $REAL_USER ./run.sh"
-            exit 1
-        fi
-    fi
-fi
-
-# Ensure we have a display set
+# Set up environment for GUI
 if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; then
-    if is_wayland; then
-        export WAYLAND_DISPLAY="wayland-0"
+    if command_exists xvfb-run; then
+        echo "🖥️  Starting virtual display..."
+        exec xvfb-run -a npm start
     else
-        export DISPLAY=":0"
+        echo "⚠️  No display detected and xvfb not available"
+        echo "Running in headless mode..."
     fi
 fi
 
-# Start the application normally if not root
+# Start the application
+echo "🏥 Starting Offline Doctor..."
 npm start
 EOF
 
-chmod +x run.sh
-echo "✅ Created run.sh script"
+    chmod +x run.sh
+    print_success "Run script created"
+}
 
-# Add local development mode setup
-if [ "$dev_mode" = "2" ] || [ "$dev_mode" = "3" ]; then
-    # Install development dependencies
-    echo "🔧 Installing development dependencies..."
+# Function to create desktop entry
+create_desktop_entry() {
+    local apps_dir="$HOME/.local/share/applications"
     
-    # Node.js
-    if ! command_exists node; then
-        echo "Installing Node.js..."
-        if command_exists apt-get && can_sudo; then
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-        elif command_exists dnf && can_sudo; then
-            sudo dnf install -y nodejs
-        elif command_exists pacman && can_sudo; then
-            sudo pacman -Sy --noconfirm nodejs npm
-        elif command_exists brew; then
-            brew install node@18
-        else
-            echo "⚠️ Please install Node.js manually from https://nodejs.org/"
-            exit 1
-        fi
-    fi
-    
-    # Python
-    if ! command_exists python3; then
-        echo "Installing Python..."
-        if command_exists apt-get && can_sudo; then
-            sudo apt-get install -y python3 python3-pip python3-venv
-        elif command_exists dnf && can_sudo; then
-            sudo dnf install -y python3 python3-pip python3-virtualenv
-        elif command_exists pacman && can_sudo; then
-            sudo pacman -Sy --noconfirm python python-pip
-        elif command_exists brew; then
-            brew install python@3.10
-        else
-            echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
-            exit 1
-        fi
-    fi
-fi
-
-# Create desktop entry (Linux only)
-if [ "$(uname)" = "Linux" ]; then
-    echo "🖥️  Creating desktop entry..."
-    
-    # Determine the appropriate applications directory and user
+    # Use system directory if running as root
     if [ "$(id -u)" = "0" ]; then
-        if [ ! -z "$SUDO_USER" ]; then
-            # If running with sudo, use the original user's home directory
-            REAL_USER="$SUDO_USER"
-            REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
-            APPS_DIR="${REAL_HOME}/.local/share/applications"
-        else
-            # If running as direct root, use system-wide directory
-            APPS_DIR="/usr/share/applications"
-        fi
-    else
-        # For regular user, use local applications directory
-        APPS_DIR="${HOME}/.local/share/applications"
+        apps_dir="/usr/share/applications"
     fi
     
-    # Create the directory if it doesn't exist
-    mkdir -p "${APPS_DIR}"
+    mkdir -p "$apps_dir"
     
-    cat > "${APPS_DIR}/offline-doctor.desktop" << EOF
+    cat > "$apps_dir/offline-doctor.desktop" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -546,26 +585,10 @@ Terminal=false
 StartupWMClass=Offline Doctor
 Categories=Science;Education;MedicalSoftware;
 EOF
-    chmod +x "${APPS_DIR}/offline-doctor.desktop"
-    echo "✅ Desktop entry created in ${APPS_DIR}"
-fi
+    
+    chmod +x "$apps_dir/offline-doctor.desktop"
+    print_success "Desktop entry created"
+}
 
-echo ""
-echo "🎉 Setup completed successfully!"
-echo ""
-echo "To start the Offline Doctor application:"
-echo "  ./run.sh"
-echo ""
-echo "Or use npm:"
-echo "  npm start"
-echo ""
-echo "To build distributable packages:"
-echo "  npm run build-linux    # For Linux AppImage/deb"
-echo "  npm run build-win      # For Windows (cross-compile)"
-echo "  npm run build-mac      # For macOS (cross-compile)"
-echo ""
-echo "📚 First-time usage tips:"
-echo "  1. The AI model (tinyllama) has been downloaded"
-echo "  2. All conversations are stored locally"
-echo "  3. No internet connection required after setup"
-echo "  4. Always consult healthcare professionals for serious medical concerns"
+# Run main function
+main "$@"

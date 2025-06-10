@@ -31,10 +31,88 @@ if [ ! -f "package.json" ]; then
     exit 1
 fi
 
-# Function to check if a command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
+# Ask user for development mode preference
+echo "Select development mode:"
+echo "1) Docker (recommended for building and distribution)"
+echo "2) Local (recommended for development)"
+echo "3) Both (full setup)"
+read -p "Enter choice [1-3]: " dev_mode
+
+case $dev_mode in
+    1)
+        if ! command_exists docker; then
+            echo "🐳 Docker not found. Installing Docker..."
+            if can_sudo; then
+                if command_exists apt-get; then
+                    sudo apt-get update
+                    sudo apt-get install -y docker.io
+                elif command_exists dnf; then
+                    sudo dnf install -y docker
+                elif command_exists pacman; then
+                    sudo pacman -Sy --noconfirm docker
+                elif command_exists zypper; then
+                    sudo zypper install -y docker
+                else
+                    echo "❌ Could not install Docker automatically."
+                    echo "Please install Docker manually:"
+                    echo "https://docs.docker.com/engine/install/"
+                    exit 1
+                fi
+                sudo systemctl start docker
+                sudo systemctl enable docker
+                if [ -n "$SUDO_USER" ]; then
+                    sudo usermod -aG docker "$SUDO_USER"
+                fi
+            else
+                echo "❌ Need sudo access to install Docker"
+                exit 1
+            fi
+        fi
+        ;;
+    2|3)
+        # Install development dependencies
+        echo "🔧 Installing development dependencies..."
+        
+        # Node.js
+        if ! command_exists node; then
+            echo "Installing Node.js..."
+            if command_exists apt-get && can_sudo; then
+                curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            elif command_exists dnf && can_sudo; then
+                sudo dnf install -y nodejs
+            elif command_exists pacman && can_sudo; then
+                sudo pacman -Sy --noconfirm nodejs npm
+            elif command_exists brew; then
+                brew install node@18
+            else
+                echo "⚠️ Please install Node.js manually from https://nodejs.org/"
+                exit 1
+            fi
+        fi
+        
+        # Python
+        if ! command_exists python3; then
+            echo "Installing Python..."
+            if command_exists apt-get && can_sudo; then
+                sudo apt-get install -y python3 python3-pip python3-venv
+            elif command_exists dnf && can_sudo; then
+                sudo dnf install -y python3 python3-pip python3-virtualenv
+            elif command_exists pacman && can_sudo; then
+                sudo pacman -Sy --noconfirm python python-pip
+            elif command_exists brew; then
+                brew install python@3.10
+            else
+                echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
+                exit 1
+            fi
+        fi
+        ;;
+    *)
+        echo "❌ Invalid choice"
+        exit 1
+        ;;
+esac
 
 # Setup based on chosen mode
 if [ "$dev_mode" = "1" ] || [ "$dev_mode" = "3" ]; then
@@ -114,8 +192,6 @@ else
     echo "Downloading tinyllama model..."
     ollama pull tinyllama
 fi
-
-# Ask user for development mode preference
 echo "Select development mode:"
 echo "1) Docker (recommended for building and distribution)"
 echo "2) Local (recommended for development)"

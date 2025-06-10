@@ -34,20 +34,87 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for proper versioning
+      
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: '3.2'
           bundler-cache: true
           working-directory: docs
+      
+      - name: Check for Gemfile
+        run: |
+          if [ ! -f "Gemfile" ]; then
+            echo "Creating basic Gemfile..."
+            cat > Gemfile << 'EOF'
+          source "https://rubygems.org"
+          
+          gem "jekyll", "~> 4.3.0"
+          gem "minima", "~> 2.5"
+          gem "jekyll-feed", "~> 0.12"
+          gem "jekyll-sitemap", "~> 1.4"
+          gem "jekyll-seo-tag", "~> 2.8"
+          gem "webrick", "~> 1.7"
+          
+          group :jekyll_plugins do
+            gem "jekyll-feed", "~> 0.12"
+            gem "jekyll-sitemap"
+            gem "jekyll-seo-tag"
+          end
+          EOF
+          fi
+      
       - name: Install dependencies
-        run: bundle install
+        run: |
+          bundle config set --local deployment false
+          bundle install
+      
+      - name: Check for _config.yml
+        run: |
+          if [ ! -f "_config.yml" ]; then
+            echo "Creating basic _config.yml..."
+            cat > _config.yml << 'EOF'
+          title: Offline Doctor
+          description: AI-powered offline medical assistant using Ollama
+          baseurl: ""
+          url: "https://yourusername.github.io"
+          
+          markdown: kramdown
+          highlighter: rouge
+          theme: minima
+          
+          plugins:
+            - jekyll-feed
+            - jekyll-sitemap
+            - jekyll-seo-tag
+          
+          exclude:
+            - Gemfile
+            - Gemfile.lock
+            - node_modules
+            - vendor
+            - .bundle
+            - .sass-cache
+            - .jekyll-cache
+            - .jekyll-metadata
+          EOF
+          fi
+      
       - name: Build with Jekyll
-        run: bundle exec jekyll build
+        run: |
+          bundle exec jekyll build --verbose
         env:
           JEKYLL_ENV: production
+      
+      - name: Test site build
+        run: |
+          echo "Checking built site structure:"
+          find _site -type f -name "*.html" | head -10
+          echo "Site built successfully!"
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

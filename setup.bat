@@ -1,9 +1,18 @@
 @echo off
-REM Offline Doctor Setup Script for Windows
-REM This script sets up the complete environment for the Offline Doctor application
+setlocal EnableDelayedExpansion
+
+REM Check if running in a container
+set IN_CONTAINER=0
+if exist /.dockerenv set IN_CONTAINER=1
+if not "!IN_CONTAINER!"=="1" for /f %%i in ('findstr "docker" \proc\1\cgroup 2^>nul') do set IN_CONTAINER=1
 
 echo 🏥 Setting up Offline Doctor - AI Medical Assistant
 echo ==================================================
+
+if "!IN_CONTAINER!"=="1" (
+    echo 📦 Running in container environment - using local development mode
+    set SKIP_DOCKER=1
+)
 
 REM Check if we're in the right directory
 if not exist "package.json" (
@@ -167,3 +176,17 @@ echo   3. No internet connection required after setup
 echo   4. Always consult healthcare professionals for serious medical concerns
 echo.
 pause
+
+REM Check for Docker if not in container
+if not "!IN_CONTAINER!"=="1" (
+    echo 🐳 Checking Docker installation...
+    docker --version >nul 2>&1
+    if !errorlevel! equ 0 (
+        for /f "tokens=*" %%i in ('docker --version') do echo ✅ Docker found: %%i
+    ) else (
+        echo Docker not found. Please install Docker Desktop from https://www.docker.com/products/docker-desktop
+        echo After installing Docker Desktop, run this script again.
+        pause
+        exit /b 1
+    )
+)

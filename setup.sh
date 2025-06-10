@@ -11,9 +11,16 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to check if we need sudo and can use it
+# Function to check if we're running in a container
+in_container() {
+    [ -f /.dockerenv ] || grep -q 'docker\|lxc' /proc/1/cgroup 2>/dev/null
+}
+
+# Function to check if we need sudo and can use it (not in container)
 can_sudo() {
-    if [ "$(id -u)" = "0" ]; then
+    if in_container; then
+        return 1
+    elif [ "$(id -u)" = "0" ]; then
         return 0
     elif command_exists sudo && sudo -n true 2>/dev/null; then
         return 0
@@ -25,18 +32,24 @@ can_sudo() {
 echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
 echo "=================================================="
 
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Error: Please run this script from the project root directory"
-    exit 1
-fi
+# Check if we're in a container
+if in_container; then
+    echo "📦 Running in container environment - using local development mode"
+    dev_mode="2"
+else
+    # Check if we're in the right directory
+    if [ ! -f "package.json" ]; then
+        echo "❌ Error: Please run this script from the project root directory"
+        exit 1
+    fi
 
-# Ask user for development mode preference
-echo "Select development mode:"
-echo "1) Docker (recommended for building and distribution)"
-echo "2) Local (recommended for development)"
-echo "3) Both (full setup)"
-read -p "Enter choice [1-3]: " dev_mode
+    # Ask user for development mode preference
+    echo "Select development mode:"
+    echo "1) Docker (recommended for building and distribution)"
+    echo "2) Local (recommended for development)"
+    echo "3) Both (full setup)"
+    read -p "Enter choice [1-3]: " dev_mode
+fi
 
 case $dev_mode in
     1)
@@ -184,12 +197,13 @@ echo ""
 echo "✅ Setup completed successfully!"
 
 # Create run script
-cat > run.sh << 'EOF'
-echo "Select development mode:"
-echo "1) Docker (recommended for building and distribution)"
-echo "2) Local (recommended for development)"
-echo "3) Both (full setup)"
-read -p "Enter choice [1-3]: " dev_mode
+cat > run.sh << 'ENDOFSCRIPT'
+#!/bin/bash
+
+# Import helper functions
+$(declare -f command_exists)
+$(declare -f in_container)
+$(declare -f can_sudo)
 
 case $dev_mode in
     1)
@@ -344,7 +358,6 @@ install_dependencies() {
             return 1
         fi
     fi
-}
 
     echo "📦 Installing required dependencies..."
     if command_exists apt-get; then
@@ -363,6 +376,34 @@ install_dependencies() {
         return 1
     fi
 }
+
+# Check for required dependencies
+check_dependency() {
+    local cmd=$1
+    local name=$2
+    local install_cmd=$3
+    
+    if ! command_exists "$cmd"; then
+        echo "❌ $name not found"
+        if can_sudo; then
+            echo "Installing $name..."
+            if ! eval "$install_cmd"; then
+                echo "Failed to install $name. Please install it manually."
+                exit 1
+            fi
+        else
+            echo "Please install $name manually and run this script again."
+            exit 1
+        fi
+    else
+        echo "✅ $name found: $($cmd --version)"
+    fi
+}
+
+# Check dependencies
+check_dependency "node" "Node.js" "curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs"
+check_dependency "python3" "Python" "sudo apt-get install -y python3 python3-pip python3-venv"
+check_dependency "npm" "npm" "sudo apt-get install -y npm"
 
 # Check for required libraries and install if missing
 if ! ldconfig -p | grep -q "libglib-2.0.so.0\|libnss3.so\|libatk-1.0.so.0\|libgtk-3.so.0"; then
@@ -427,6 +468,87 @@ npm start
 EOF
 
 chmod +x run.sh
+echo "✅ Created run.sh script"
+
+# Add local development mode setup
+if [ "$dev_mode" = "2" ] || [ "$dev_mode" = "3" ]; then
+    # Install development dependencies
+    echo "🔧 Installing development dependencies..."
+    
+    # Node.js
+    if ! command_exists node; then
+        echo "Installing Node.js..."
+        if command_exists apt-get && can_sudo; then
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        elif command_exists dnf && can_sudo; then
+            sudo dnf install -y nodejs
+        elif command_exists pacman && can_sudo; then
+            sudo pacman -Sy --noconfirm nodejs npm
+        elif command_exists brew; then
+            brew install node@18
+        else
+            echo "⚠️ Please install Node.js manually from https://nodejs.org/"
+            exit 1
+        fi
+    fi
+    
+    # Python
+    if ! command_exists python3; then
+        echo "Installing Python..."
+        if command_exists apt-get && can_sudo; then
+            sudo apt-get install -y python3 python3-pip python3-venv
+        elif command_exists dnf && can_sudo; then
+            sudo dnf install -y python3 python3-pip python3-virtualenv
+        elif command_exists pacman && can_sudo; then
+            sudo pacman -Sy --noconfirm python python-pip
+        elif command_exists brew; then
+            brew install python@3.10
+        else
+            echo "⚠️ Please install Python 3.7+ manually from https://python.org/"
+            exit 1
+        fi
+    fi
+fi
+
+# Create desktop entry (Linux only)
+if [ "$(uname)" = "Linux" ]; then
+    echo "🖥️  Creating desktop entry..."
+    
+    # Determine the appropriate applications directory and user
+    if [ "$(id -u)" = "0" ]; then
+        if [ ! -z "$SUDO_USER" ]; then
+            # If running with sudo, use the original user's home directory
+            REAL_USER="$SUDO_USER"
+            REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+            APPS_DIR="${REAL_HOME}/.local/share/applications"
+        else
+            # If running as direct root, use system-wide directory
+            APPS_DIR="/usr/share/applications"
+        fi
+    else
+        # For regular user, use local applications directory
+        APPS_DIR="${HOME}/.local/share/applications"
+    fi
+    
+    # Create the directory if it doesn't exist
+    mkdir -p "${APPS_DIR}"
+    
+    cat > "${APPS_DIR}/offline-doctor.desktop" << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Offline Doctor
+Comment=AI-powered offline medical assistant
+Exec=$(pwd)/run.sh
+Icon=$(pwd)/assets/icon.png
+Terminal=false
+StartupWMClass=Offline Doctor
+Categories=Science;Education;MedicalSoftware;
+EOF
+    chmod +x "${APPS_DIR}/offline-doctor.desktop"
+    echo "✅ Desktop entry created in ${APPS_DIR}"
+fi
 
 echo ""
 echo "🎉 Setup completed successfully!"

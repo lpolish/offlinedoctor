@@ -165,16 +165,24 @@ fi
 if [ "$(uname)" = "Linux" ]; then
     echo "🖥️  Creating desktop entry..."
     
-    # Determine the appropriate applications directory
+    # Determine the appropriate applications directory and user
     if [ "$(id -u)" = "0" ]; then
-        # For root user, use system-wide applications directory
-        APPS_DIR="/usr/share/applications"
+        if [ ! -z "$SUDO_USER" ]; then
+            # If running with sudo, use the original user's home directory
+            REAL_USER="$SUDO_USER"
+            REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+            APPS_DIR="${REAL_HOME}/.local/share/applications"
+        else
+            # If running as direct root, use system-wide directory
+            APPS_DIR="/usr/share/applications"
+        fi
     else
         # For regular user, use local applications directory
         APPS_DIR="${HOME}/.local/share/applications"
-        # Create the directory if it doesn't exist
-        mkdir -p "${APPS_DIR}"
     fi
+    
+    # Create the directory if it doesn't exist
+    mkdir -p "${APPS_DIR}"
     
     cat > "${APPS_DIR}/offline-doctor.desktop" << EOF
 [Desktop Entry]

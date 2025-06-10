@@ -138,6 +138,7 @@ To create a new release:
    - Generate release notes
 
 # Platform-specific builds
+```bash
 npm run build-win     # Windows NSIS installer
 npm run build-mac     # macOS DMG
 npm run build-linux   # Linux AppImage and DEB

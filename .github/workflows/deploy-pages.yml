@@ -5,15 +5,17 @@ on:
     branches: ["main"]
     paths:
       - 'docs/**'  # Only trigger on changes to docs directory
+      - '.github/workflows/deploy-pages.yml'  # Also trigger on workflow changes
+  release:
+    types: [published]  # Update docs when a new release is published
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: write       # Required for pushing to gh-pages branch
-  pages: write
-  id-token: write
-  deployments: write   # Required for deployments
+  contents: read      # Only need read for docs
+  pages: write       # Need write for deploying to Pages
+  id-token: write    # Need write for creating the deployment
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 concurrency:
@@ -30,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper versioning
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Setup Ruby

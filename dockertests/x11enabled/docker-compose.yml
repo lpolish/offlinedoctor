@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  ubuntu-x11-test:
+    image: ubuntu:24.04
+    container_name: offlinedoctor-test-env
+    
+    # Enable interactive mode and keep container running
+    stdin_open: true
+    tty: true
+    
+    # X11 forwarding configuration
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.docker.xauth
+    
+    volumes:
+      # X11 socket for GUI applications
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      
+      # Mount the entire offlinedoctor project for testing
+      - ../../:/opt/offlinedoctor:rw
+      
+      # Optional: Mount home directory for persistence
+      - ./test-home:/home/testuser:rw
+    
+    # Network configuration
+    network_mode: host
+    
+    # Security options for X11
+    security_opt:
+      - seccomp:unconfined
+    
+    # Custom command to setup environment
+    command: >
+      bash -c "
+        # Update package list
+        apt-get update &&
+        
+        # Install essential packages
+        apt-get install -y \
+          curl \
+          git \
+          wget \
+          nano \
+          vim \
+          sudo \
+          x11-apps \
+          xauth \
+          python3 \
+          python3-pip \
+          nodejs \
+          npm \
+          build-essential &&
+        
+        # Create test user
+        useradd -m -s /bin/bash testuser &&
+        usermod -aG sudo testuser &&
+        echo 'testuser:testpass' | chpasswd &&
+        
+        # Set proper permissions for X11
+        chown testuser:testuser /tmp/.docker.xauth 2>/dev/null || true &&
+        
+        # Keep container running
+        tail -f /dev/null
+      "
+    
+    # Restart policy
+    restart: unless-stopped
+
+# Optional: Create a volume for persistent home directory
+volumes:
+  test-home:
+    driver: local

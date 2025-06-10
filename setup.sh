@@ -182,16 +182,9 @@ ollama pull llama2 || {
 
 echo ""
 echo "✅ Setup completed successfully!"
-echo "To start the application, run: npm start"
-echo "=================================================="
-echo "📥 Setting up medical AI model..."
-echo "This may take a while depending on your internet connection..."
-if ollama list | grep -q "tinyllama"; then
-    echo "✅ tinyllama model already available"
-else
-    echo "Downloading tinyllama model..."
-    ollama pull tinyllama
-fi
+
+# Create run script
+cat > run.sh << 'EOF'
 echo "Select development mode:"
 echo "1) Docker (recommended for building and distribution)"
 echo "2) Local (recommended for development)"
@@ -351,16 +344,17 @@ install_dependencies() {
             return 1
         fi
     fi
+}
 
     echo "📦 Installing required dependencies..."
-    if command -v apt-get >/dev/null 2>&1; then
+    if command_exists apt-get; then
         $SUDO apt-get update -qq
         $SUDO apt-get install -y --no-install-recommends $packages
-    elif command -v dnf >/dev/null 2>&1; then
+    elif command_exists dnf; then
         $SUDO dnf install -y $packages
-    elif command -v pacman >/dev/null 2>&1; then
+    elif command_exists pacman; then
         $SUDO pacman -Sy --needed --noconfirm $packages
-    elif command -v zypper >/dev/null 2>&1; then
+    elif command_exists zypper; then
         $SUDO zypper --non-interactive install $packages
     else
         echo "❌ Unable to install dependencies automatically"
@@ -453,4 +447,3 @@ echo "  1. The AI model (tinyllama) has been downloaded"
 echo "  2. All conversations are stored locally"
 echo "  3. No internet connection required after setup"
 echo "  4. Always consult healthcare professionals for serious medical concerns"
-echo ""

@@ -5,14 +5,22 @@
 
 set -e
 
-# Function to check if we have sudo access
-check_sudo() {
+# Function to check if we have root access
+check_root_access() {
+    # First check if we're already root
+    if [ "$(id -u)" = "0" ]; then
+        echo "✅ Running as root"
+        return 0
+    fi
+    
+    # If not root, check if we can use sudo
     if sudo -n true 2>/dev/null; then
         echo "✅ Sudo access available"
         return 0
     else
-        echo "❌ This script may need sudo access for some operations"
-        echo "Please run: sudo -v"
+        echo "❌ This script needs root privileges for some operations"
+        echo "Please run as root or make sure you have sudo access"
+        echo "You can try: sudo ./setup.sh"
         return 1
     fi
 }
@@ -39,8 +47,8 @@ detect_package_manager() {
 echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
 echo "=================================================="
 
-# Check sudo at the start
-check_sudo
+# Check root access at the start
+check_root_access || exit 1
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then

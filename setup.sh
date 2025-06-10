@@ -5,8 +5,42 @@
 
 set -e
 
+# Function to check if we have sudo access
+check_sudo() {
+    if sudo -n true 2>/dev/null; then
+        echo "✅ Sudo access available"
+        return 0
+    else
+        echo "❌ This script may need sudo access for some operations"
+        echo "Please run: sudo -v"
+        return 1
+    fi
+}
+
+# Function to detect package manager
+detect_package_manager() {
+    if command -v apt-get >/dev/null; then
+        echo "apt"
+    elif command -v dnf >/dev/null; then
+        echo "dnf"
+    elif command -v yum >/dev/null; then
+        echo "yum"
+    elif command -v pacman >/dev/null; then
+        echo "pacman"
+    elif command -v zypper >/dev/null; then
+        echo "zypper"
+    elif command -v brew >/dev/null; then
+        echo "brew"
+    else
+        echo "unknown"
+    fi
+}
+
 echo "🏥 Setting up Offline Doctor - AI Medical Assistant"
 echo "=================================================="
+
+# Check sudo at the start
+check_sudo
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then
@@ -95,10 +129,21 @@ echo "🚀 Starting Ollama service..."
 if ! pgrep -f "ollama serve" > /dev/null; then
     echo "Starting Ollama in background..."
     nohup ollama serve > /dev/null 2>&1 &
-    sleep 3
+    sleep 5
 fi
 
 # Pull medical model
+echo "🤖 Pulling medical AI model..."
+ollama pull llama2 || {
+    echo "❌ Failed to pull the medical model. Please check your internet connection and try again."
+    echo "You can manually pull the model later with: ollama pull llama2"
+    exit 1
+}
+
+echo ""
+echo "✅ Setup completed successfully!"
+echo "To start the application, run: npm start"
+echo "=================================================="
 echo "📥 Setting up medical AI model..."
 echo "This may take a while depending on your internet connection..."
 if ollama list | grep -q "tinyllama"; then

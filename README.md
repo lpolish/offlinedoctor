@@ -29,8 +29,6 @@ Before installing, ensure you have:
 
 ## 🚀 Quick Start
 
-### Automated Setup (Recommended)
-
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/lpolish/offlinedoctor.git
@@ -38,58 +36,26 @@ Before installing, ensure you have:
    ```
 
 2. **Run the setup script:**
-   
-   **Linux/macOS:**
    ```bash
+   # Linux/macOS
    ./setup.sh
-   ```
    
-   **Windows:**
-   ```cmd
+   # Windows
    setup.bat
    ```
+
+   The setup script will:
+   - Check and install required dependencies
+   - Set up Node.js and Python environments
+   - Install and configure Ollama with the medical AI model
+   - Configure the application for first use
 
 3. **Start the application:**
    ```bash
    npm start
    ```
 
-### Manual Setup
-
-1. **Clone and install dependencies:**
-   ```bash
-   git clone https://github.com/lpolish/offlinedoctor.git
-   cd offlinedoctor
-   npm install
-   ```
-
-2. **Set up Python backend:**
-   ```bash
-   cd backend
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   deactivate
-   cd ..
-   ```
-
-3. **Install Ollama:**
-   ```bash
-   # Linux/macOS
-   curl -fsSL https://ollama.ai/install.sh | sh
-   
-   # Windows: Download from https://ollama.ai/download
-   ```
-
-4. **Pull the medical AI model:**
-   ```bash
-   ollama pull llama2
-   ```
-
-5. **Start the application:**
-   ```bash
-   npm start
-   ```
+> **Note**: If the automated setup fails, please check the [detailed setup guide](docs/getting-started.md) for manual installation steps and troubleshooting.
 
 ## 📦 Building Distributables
 

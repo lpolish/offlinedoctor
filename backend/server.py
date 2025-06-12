@@ -23,26 +23,21 @@ CORS(app)
 
 # Ollama configuration
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-DEFAULT_MODEL = "tinyllama"
+DEFAULT_MODEL = "llama2"
 
 class MedicalAI:
     def __init__(self):
         self.model = DEFAULT_MODEL
         self.medical_context = """
-You are a medical AI assistant designed to provide helpful medical information and guidance. 
-Your role is to:
-1. Analyze symptoms and provide general medical guidance
-2. Suggest when to seek professional medical care
-3. Provide information about common conditions
-4. Offer health and wellness advice
+You are providing clinical guidance to medical practitioners in remote settings. Respond as a medical consultant would - direct, focused, and practical.
 
-Important disclaimers:
-- You are not a replacement for professional medical diagnosis or treatment
-- Always recommend consulting healthcare professionals for serious concerns
-- Do not provide specific medication dosages or prescriptions
-- Emphasize the importance of professional medical care when appropriate
+When a practitioner presents patient symptoms, provide:
+1. Primary differential diagnosis considerations
+2. Critical red flags to watch for
+3. Immediate assessment priorities
+4. Practical management with limited resources
 
-Please provide helpful, accurate, and responsible medical guidance.
+Address the practitioner directly using clinical language. Be concise and actionable.
 """
     
     def check_ollama_status(self):
@@ -104,8 +99,18 @@ Please provide helpful, accurate, and responsible medical guidance.
             if not self.ensure_model_available():
                 return "I'm sorry, but the medical AI model is not currently available. Please check your Ollama installation."
             
-            # Prepare the prompt with medical context
-            full_prompt = f"{self.medical_context}\n\nPatient: {user_message}\n\nMedical Assistant:"
+            # Prepare the prompt with medical context and conversation history
+            full_prompt = f"{self.medical_context}\n"
+            
+            # Add conversation history if provided
+            if conversation_history:
+                full_prompt += "Previous conversation:\n"
+                for msg in conversation_history[-4:]:  # Only last 4 messages for context
+                    role = "Practitioner" if msg['role'] == 'user' else "Assistant"
+                    full_prompt += f"{role}: {msg['content']}\n"
+                full_prompt += "\n"
+            
+            full_prompt += f"Practitioner: {user_message}\nAssistant:"
             
             # Prepare request data
             request_data = {
@@ -113,9 +118,10 @@ Please provide helpful, accurate, and responsible medical guidance.
                 "prompt": full_prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0.3,  # Lower temperature for more consistent medical advice
-                    "top_p": 0.9,
-                    "max_tokens": 500
+                    "temperature": 0.2,  # Low temperature for focused medical advice
+                    "top_p": 0.9,        
+                    "max_tokens": 400,   # Concise responses
+                    "stop": ["Practitioner:", "Assistant:"]
                 }
             }
             
@@ -176,6 +182,7 @@ def medical_consultation():
     try:
         data = request.get_json()
         user_message = data.get('message', '')
+        conversation_history = data.get('conversation_history', [])
         
         if not user_message:
             return jsonify({'error': 'Message is required'}), 400
@@ -186,8 +193,8 @@ def medical_consultation():
                 'error': 'Medical AI service is not available. Please ensure Ollama is running.'
             }), 503
         
-        # Generate response
-        response = medical_ai.generate_medical_response(user_message)
+        # Generate response with conversation history
+        response = medical_ai.generate_medical_response(user_message, conversation_history)
         
         return jsonify({
             'response': response,

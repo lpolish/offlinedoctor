@@ -12,6 +12,7 @@ class OfflineDoctor {
         await this.checkSystemStatus();
         this.loadSettings();
         this.loadMedicalHistory();
+        this.initializeChat();
     }
 
     setupEventListeners() {
@@ -49,6 +50,11 @@ class OfflineDoctor {
         document.getElementById('temperatureSlider')?.addEventListener('input', (e) => {
             document.getElementById('temperatureValue').textContent = e.target.value;
         });
+
+        // New Conversation button
+        document.getElementById('newConversationBtn')?.addEventListener('click', () => {
+            this.clearChat();
+        });
     }
 
     switchSection(sectionName) {
@@ -63,6 +69,16 @@ class OfflineDoctor {
             section.classList.remove('active');
         });
         document.getElementById(sectionName).classList.add('active');
+
+        // If switching to consultation and coming from another section, 
+        // ensure we have a fresh conversation
+        if (sectionName === 'consultation' && this.currentSection !== 'consultation') {
+            // Only reinitialize if there are no user messages yet
+            const hasUserMessages = this.chatMessages.some(msg => msg.sender === 'user');
+            if (!hasUserMessages) {
+                this.initializeChat();
+            }
+        }
 
         this.currentSection = sectionName;
     }
@@ -109,6 +125,35 @@ class OfflineDoctor {
         }
     }
 
+    initializeChat() {
+        // Clear any existing messages first
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+        
+        // Add the welcome message tailored for medical practitioners
+        const welcomeMessage = `**Clinical Decision Support for Remote Practice**
+
+I assist medical practitioners with: differential diagnosis, red flag identification, resource-appropriate management, and evacuation criteria.
+
+**Format your queries clinically** (e.g., "32F acute severe headache, photophobia, neck rigidity, fever 38.5°C")
+
+**Clinical Disclaimer:** This tool supports clinical judgment - does not replace direct assessment or specialist consultation when available.`;
+        
+        this.addMessageToChat(welcomeMessage, 'bot');
+    }
+
+    clearChat() {
+        // Clear the chat messages array
+        this.chatMessages = [];
+        
+        // Clear the chat UI
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+        
+        // Re-initialize with welcome message
+        this.initializeChat();
+    }
+
     async sendMessage() {
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value.trim();
@@ -149,27 +194,45 @@ class OfflineDoctor {
 
         const avatar = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
         
+        // Convert line breaks to HTML breaks for proper formatting
+        const formattedMessage = message.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+        
         messageDiv.innerHTML = `
             <div class="message-avatar">
                 ${avatar}
             </div>
             <div class="message-content">
-                <p>${message}</p>
+                <p>${formattedMessage}</p>
             </div>
         `;
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Add to internal chat messages array for conversation tracking
+        this.chatMessages.push({ message, sender, timestamp: new Date().toISOString() });
     }
 
     async queryMedicalAI(message) {
         try {
+            // Prepare conversation context (last few messages)
+            const recentMessages = this.chatMessages
+                .filter(msg => msg.sender !== 'bot' || !msg.message.includes('Important Disclaimer'))
+                .slice(-6) // Last 6 messages for context
+                .map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'assistant',
+                    content: msg.message
+                }));
+
             const response = await fetch('http://127.0.0.1:5000/consultation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: message })
+                body: JSON.stringify({ 
+                    message: message,
+                    conversation_history: recentMessages
+                })
             });
 
             if (!response.ok) {

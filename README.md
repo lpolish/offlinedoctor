@@ -1,8 +1,12 @@
 # Offline Doctor - AI Medical Assistant 🏥
 
+[![Deploy GitHub Pages](https://github.com/lpolish/offlinedoctor/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/lpolish/offlinedoctor/actions/workflows/deploy-pages.yml)
+
 A cross-platform desktop application that provides AI-powered medical assistance without requiring an internet connection. Built with Electron and powered by Ollama for complete privacy and offline functionality.
 
 ![Offline Doctor](offlinedoctor.png)
+
+📖 **[Full Documentation & Downloads](https://lpolish.github.io/offlinedoctor/)**
 
 ## ✨ Features
 

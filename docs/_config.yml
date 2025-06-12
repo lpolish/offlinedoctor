@@ -2,8 +2,8 @@ title: Offline Doctor
 description: AI-powered offline medical assistant
 theme: jekyll-theme-cayman
 
-baseurl: "/offlinedoctor"  # Update this to match your repository name
-url: "https://lpolish.github.io"  # Update this to your GitHub Pages URL
+baseurl: "/offlinedoctor"  # Repository name
+url: "https://lpolish.github.io"  # GitHub Pages URL
 
 # Jekyll settings
 sass:

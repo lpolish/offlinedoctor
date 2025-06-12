@@ -55,27 +55,28 @@
                 <!-- Consultation Section -->
                 <section id="consultation" class="content-section active">
                     <div class="section-header">
-                        <h2>AI Medical Consultation</h2>
-                        <p>Describe your symptoms or ask medical questions. Our AI will provide guidance.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h2>AI Medical Consultation</h2>
+                                <p>Professional medical guidance for practitioners in remote settings. Present symptoms and get focused clinical insights.</p>
+                            </div>
+                            <button id="newConversationBtn" class="new-conversation-btn" title="Start a new conversation">
+                                <i class="fas fa-plus"></i>
+                                New Chat
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="chat-container">
                         <div class="chat-messages" id="chatMessages">
-                            <div class="message bot-message">
-                                <div class="message-avatar">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <div class="message-content">
-                                    <p>Hello! I'm your AI medical assistant. Please describe your symptoms or any health concerns you may have. Remember, I'm here to provide guidance, but always consult with a healthcare professional for serious medical issues.</p>
-                                </div>
-                            </div>
+                            <!-- Messages will be populated here -->
                         </div>
                         
                         <div class="chat-input-container">
                             <div class="input-group">
                                 <textarea 
                                     id="messageInput" 
-                                    placeholder="Describe your symptoms or ask a medical question..."
+                                    placeholder="Describe patient symptoms or ask clinical questions (e.g., '25yo male with severe headache, photophobia, neck stiffness')"
                                     rows="3"
                                 ></textarea>
                                 <button id="sendButton" class="send-btn">
